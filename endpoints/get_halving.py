@@ -16,7 +16,7 @@ class HalvingResponse(BaseModel):
 
 
 @app.get("/info/halving", response_model=HalvingResponse | str, tags=["Kaspa network info"])
-async def get_halving(field: str | None = None):
+async def get_halving(field: str  = None):
     """
     Returns information about chromatic halving
     """

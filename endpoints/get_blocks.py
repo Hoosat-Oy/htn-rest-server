@@ -20,12 +20,12 @@ class VerboseDataModel(BaseModel):
     hash: str = "18c7afdf8f447ca06adb8b4946dc45f5feb1188c7d177da6094dfbc760eca699"
     difficulty: float = 4102204523252.94,
     selectedParentHash: str = "580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"
-    transactionIds: List[str] | None = ["533f8314bf772259fe517f53507a79ebe61c8c6a11748d93a0835551233b3311"]
+    transactionIds: List[str] = ["533f8314bf772259fe517f53507a79ebe61c8c6a11748d93a0835551233b3311"]
     blueScore: str = "18483232"
-    childrenHashes: List[str] | None = None
+    childrenHashes: List[str] = None
     mergeSetBluesHashes: List[str] = ["580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"]
     mergeSetRedsHashes: List[str] = ["580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"]
-    isChainBlock: bool | None = None
+    isChainBlock: bool = None
 
 
 class ParentHashModel(BaseModel):
@@ -49,7 +49,7 @@ class BlockHeader(BaseModel):
 
 class BlockModel(BaseModel):
     header: BlockHeader
-    transactions: list | None
+    transactions: list 
     verboseData: VerboseDataModel
 
 
@@ -58,7 +58,7 @@ class BlockResponse(BaseModel):
                               "18c7afdf8f447ca06adb8b4946dc45f5feb1188c7d177da6094dfbc760eca699",
                               "9a822351cd293a653f6721afec1646bd1690da7124b5fbe87001711406010604",
                               "2fda0dad4ec879b4ad02ebb68c757955cab305558998129a7de111ab852e7dcb"]
-    blocks: List[BlockModel] | None
+    blocks: List[BlockModel] 
 
 
 @app.get("/blocks/{blockId}", response_model=BlockModel, tags=["Kaspa blocks"])

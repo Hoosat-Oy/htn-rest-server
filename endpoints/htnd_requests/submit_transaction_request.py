@@ -28,15 +28,15 @@ class SubmitTxScriptPublicKey(BaseModel):
 class SubmitTxOutput(BaseModel):
     amount: int
     scriptPublicKey: SubmitTxScriptPublicKey
-    # verboseData: TxOutputVerboseData | None
+    # verboseData: TxOutputVerboseData 
 
 
 class SubmitTxModel(BaseModel):
     version: int
     inputs: List[SubmitTxInput]
     outputs: List[SubmitTxOutput]
-    lockTime: int | None = 0
-    subnetworkId: str | None
+    lockTime: int  = 0
+    subnetworkId: str 
 
 
 class SubmitTransactionRequest(BaseModel):
@@ -45,8 +45,8 @@ class SubmitTransactionRequest(BaseModel):
 
 
 class SubmitTransactionResponse(BaseModel):
-    transactionId: str | None
-    error: str | None
+    transactionId: str 
+    error: str 
 
 
 @app.post("/transactions",

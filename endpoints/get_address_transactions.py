@@ -20,7 +20,7 @@ DESC_RESOLVE_PARAM = "Use this parameter if you want to fetch the TransactionInp
 
 class TransactionsReceivedAndSpent(BaseModel):
     tx_received: str
-    tx_spent: str | None
+    tx_spent: str 
     # received_amount: int = 38240000000
 
 

@@ -6,9 +6,9 @@ from htnd.HtndThread import HtndThread
 # pipenv run python -m grpc_tools.protoc -I./protos --python_out=. --grpc_python_out=. ./protos/rpc.proto ./protos/messages.proto ./protos/p2p.proto
 
 class HtndClient(object):
-    def __init__(self, kaspad_host, kaspad_port):
+    def __init__(self, kaspad_host, htnd_port):
         self.kaspad_host = kaspad_host
-        self.kaspad_port = kaspad_port
+        self.htnd_port = htnd_port
         self.server_version = None
         self.is_utxo_indexed = None
         self.is_synced = None
@@ -27,9 +27,9 @@ class HtndClient(object):
             return False
 
     async def request(self, command, params=None, timeout=5):
-        with HtndThread(self.kaspad_host, self.kaspad_port) as t:
+        with HtndThread(self.kaspad_host, self.htnd_port) as t:
             return await t.request(command, params, wait_for_response=True, timeout=timeout)
 
     async def notify(self, command, params, callback):
-        t = HtndThread(self.kaspad_host, self.kaspad_port, async_thread=True)
+        t = HtndThread(self.kaspad_host, self.htnd_port, async_thread=True)
         return await t.notify(command, params, callback)
