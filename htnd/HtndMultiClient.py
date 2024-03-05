@@ -6,7 +6,7 @@ from htnd.HtndClient import HtndClient
 from htnd.HtndThread import HtndCommunicationError
 
 
-class KaspadMultiClient(object):
+class HtndMultiClient(object):
     def __init__(self, hosts: list[str]):
         self.kaspads = [HtndClient(*h.split(":")) for h in hosts]
 
