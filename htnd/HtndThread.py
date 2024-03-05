@@ -18,7 +18,7 @@ class HtndCommunicationError(Exception): pass
 
 # pipenv run python -m grpc_tools.protoc -I./protos --python_out=. --grpc_python_out=. ./protos/rpc.proto ./protos/messages.proto ./protos/p2p.proto
 
-class KHtndThread(object):
+class HtndThread(object):
     def __init__(self, htnd_host, htnd_port, async_thread=True):
 
         self.htnd_host = htnd_host
