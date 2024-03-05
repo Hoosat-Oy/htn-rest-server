@@ -7,7 +7,7 @@ from htnd.HtndThread import HtndCommunicationError
 
 
 class HtndMultiClient(object):
-    def __init__(self, hosts: list[str]):
+    def __init__(self, hosts):
         self.htnpads = [HtndClient(*h.split(":")) for h in hosts]
 
     def __get_htnpad(self):
