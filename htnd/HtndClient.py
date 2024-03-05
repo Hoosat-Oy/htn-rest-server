@@ -5,7 +5,7 @@ from htnd.HtndThread import HtndThread
 
 # pipenv run python -m grpc_tools.protoc -I./protos --python_out=. --grpc_python_out=. ./protos/rpc.proto ./protos/messages.proto ./protos/p2p.proto
 
-class KaspadClient(object):
+class HtndClient(object):
     def __init__(self, kaspad_host, kaspad_port):
         self.kaspad_host = kaspad_host
         self.kaspad_port = kaspad_port
