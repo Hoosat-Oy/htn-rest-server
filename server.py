@@ -72,7 +72,7 @@ htnd_hosts = []
 
 for i in range(100):
     try:
-        htnd_hosts.append(os.environ[f"KASPAD_HOST_{i + 1}"].strip())
+        htnd_hosts.append(os.environ[f"HTND_HOST_{i + 1}"].strip())
     except KeyError:
         break
 
