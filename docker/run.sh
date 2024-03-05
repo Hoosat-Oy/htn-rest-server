@@ -1,2 +1,2 @@
 #!/bin/sh
-docker run --rm supertypo/kaspa-rest-server:latest
+docker run --rm supertypo/htn-rest-server:latest

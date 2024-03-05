@@ -27,6 +27,6 @@ async def get_price(stringOnly: bool = False):
          include_in_schema=False)
 async def get_market_data():
     """
-    Returns market data for kaspa.
+    Returns market data for htn.
     """
     return await get_kas_market_data()

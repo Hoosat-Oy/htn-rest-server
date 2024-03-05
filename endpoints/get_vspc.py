@@ -4,7 +4,7 @@ from typing import List
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from server import app, kaspad_client
+from server import app, htnd_client
 
 
 class AcceptedTransactionIdsModel(BaseModel):
@@ -25,9 +25,9 @@ async def get_virtual_selected_parent_chain_from_block(
         includeAcceptedTransactionIds: bool = True):
     """
     GetVirtualSelectedParentChainFromBlockRequestMessage requests the virtual selected parent chain from
-    some startHash to this kaspad's current virtual.
+    some startHash to this htnd's current virtual.
     """
-    resp = await kaspad_client.request("getVirtualSelectedParentChainFromBlockRequest",
+    resp = await htnd_client.request("getVirtualSelectedParentChainFromBlockRequest",
                                        params={
                                            "startHash": startHash,
                                            "includeAcceptedTransactionIds": includeAcceptedTransactionIds

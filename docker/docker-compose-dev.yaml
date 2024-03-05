@@ -1,9 +1,9 @@
 version: "3"
 
 services:
-  kaspa_explorer:
-    container_name: kaspa_explorer
-    image: supertypo/kaspa-explorer:latest
+  htn_explorer:
+    container_name: htn_explorer
+    image: supertypo/htn-explorer:latest
     restart: unless-stopped
     environment:
       API_URI: "http://localhost:8000"
@@ -11,8 +11,8 @@ services:
     ports:
       - "8080:8080/tcp"
 
-  kaspa_rest_server:
-    container_name: kaspa_rest_server
+  htn_rest_server:
+    container_name: htn_rest_server
     build:
       context: ../
       dockerfile: docker/Dockerfile.dev
@@ -21,24 +21,24 @@ services:
     volumes:
       - "../:/app"
     environment:
-      KASPAD_HOST_1: kaspad:16110
+      HTND_HOST_1: htnd:16110
       SQL_URI: postgresql+asyncpg://postgres:postgres@postgresql:5432/postgres
     ports:
       - "8000:8000/tcp"
     links:
-      - kaspad
+      - htnd
       - postgresql
 
-  kaspa_db_filler:
-    container_name: kaspa_db_filler
-    image: supertypo/kaspa-db-filler:latest
+  htn_db_filler:
+    container_name: htn_db_filler
+    image: supertypo/htn-db-filler:latest
     restart: unless-stopped
     environment:
       DEBUG: "true"
-      KASPAD_HOST_1: kaspad:16110
+      HTND_HOST_1: htnd:16110
       SQL_URI: postgresql://postgres:postgres@postgresql:5432/postgres
     links:
-      - kaspad
+      - htnd
       - postgresql
 
   postgresql:
@@ -54,17 +54,17 @@ services:
     volumes:
       - postgresql:/var/lib/postgresql/data/
 
-  kaspad:
-    container_name: kaspad
-    image: supertypo/kaspad:latest
+  htnd:
+    container_name: htnd
+    image: supertypo/htnd:latest
     restart: unless-stopped
     ports:
       - "16110:16110/tcp"
       - "16111:16111/tcp"
     volumes:
-      - kaspad:/app/data/
-    command: kaspad --utxoindex --connect=kdxweb.kaspacalc.net
+      - htnd:/app/data/
+    command: htnd --utxoindex --connect=kdxweb.htncalc.net
 
 volumes:
   postgresql:
-  kaspad:
+  htnd:

@@ -8,7 +8,7 @@ from dbsession import async_session
 from endpoints import sql_db_only
 from helper import KeyValueStore
 from models.Block import Block
-from server import app, kaspad_client
+from server import app, htnd_client
 
 MAXHASH_CACHE = (0, 0)
 
@@ -36,7 +36,7 @@ async def get_hashrate(stringOnly: bool = False):
     Returns the current hashrate for Kaspa network in TH/s.
     """
 
-    resp = await kaspad_client.request("getBlockDagInfoRequest")
+    resp = await htnd_client.request("getBlockDagInfoRequest")
     hashrate = resp["getBlockDagInfoResponse"]["difficulty"] * 2
     hashrate_in_th = hashrate / 1_000_000_000_000
 

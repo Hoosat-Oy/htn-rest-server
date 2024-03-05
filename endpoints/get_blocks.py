@@ -11,7 +11,7 @@ from dbsession import async_session
 from endpoints.get_virtual_chain_blue_score import current_blue_score_data
 from models.Block import Block
 from models.Transaction import Transaction, TransactionOutput, TransactionInput
-from server import app, kaspad_client
+from server import app, htnd_client
 
 IS_SQL_DB_CONFIGURED = os.getenv("SQL_URI") is not None
 
@@ -67,7 +67,7 @@ async def get_block(response: Response,
     """
     Get block information for a given block id
     """
-    resp = await kaspad_client.request("getBlockRequest",
+    resp = await htnd_client.request("getBlockRequest",
                                        params={
                                            "hash": blockId,
                                            "includeTransactions": True
@@ -75,11 +75,11 @@ async def get_block(response: Response,
     requested_block = None
 
     if "block" in resp["getBlockResponse"]:
-        # We found the block in kaspad. Just use it
+        # We found the block in htnd. Just use it
         requested_block = resp["getBlockResponse"]["block"]
     else:
         if IS_SQL_DB_CONFIGURED:
-            # Didn't find the block in kaspad. Try getting it from the DB
+            # Didn't find the block in htnd. Try getting it from the DB
             response.headers["X-Data-Source"] = "Database"
             requested_block = await get_block_from_db(blockId)
 
@@ -91,7 +91,7 @@ async def get_block(response: Response,
         })
 
     # We found the block, now we guarantee it contains the transactions
-    # It's possible that the block from kaspad does not contain transactions
+    # It's possible that the block from htnd does not contain transactions
     if 'transactions' not in requested_block or not requested_block['transactions']:
         requested_block['transactions'] = await get_block_transactions(blockId)
 
@@ -114,14 +114,14 @@ async def get_blocks(response: Response,
                      includeTransactions: bool = False):
     """
     Lists block beginning from a low hash (block id). Note that this function tries to determine the blocks from
-    the kaspad node. If this is not possible, the database is getting queryied as backup. In this case the response
+    the htnd node. If this is not possible, the database is getting queryied as backup. In this case the response
     header contains the key value pair: x-data-source: database.
 
     Additionally the fields in verboseData: isChainBlock, childrenHashes and transactionIds can't be filled.
     """
     response.headers["Cache-Control"] = "public, max-age=3"
 
-    resp = await kaspad_client.request("getBlocksRequest",
+    resp = await htnd_client.request("getBlocksRequest",
                                        params={
                                            "lowHash": lowHash,
                                            "includeBlocks": includeBlocks,
@@ -136,7 +136,7 @@ async def get_blocks_from_bluescore(response: Response,
                                     blueScore: int = 43679173,
                                     includeTransactions: bool = False):
     """
-    Lists block beginning from a low hash (block id). Note that this function is running on a kaspad and not returning
+    Lists block beginning from a low hash (block id). Note that this function is running on a htnd and not returning
     data from database.
     """
     response.headers["X-Data-Source"] = "Database"

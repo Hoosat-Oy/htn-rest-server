@@ -3,11 +3,11 @@ from typing import List
 
 from pydantic import BaseModel
 
-from server import app, kaspad_client
+from server import app, htnd_client
 
 
 class NetworkResponse(BaseModel):
-    networkName: str = "kaspa-mainnet"
+    networkName: str = "htn-mainnet"
     blockCount: str = "261357"
     headerCount: str = "23138783"
     tipHashes: List[str] = [
@@ -27,7 +27,7 @@ class NetworkResponse(BaseModel):
 @app.get("/info/network", response_model=NetworkResponse, tags=["Kaspa network info"])
 async def get_network():
     """
-    Get some global kaspa network information
+    Get some global htn network information
     """
-    resp = await kaspad_client.request("getBlockDagInfoRequest")
+    resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]

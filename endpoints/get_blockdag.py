@@ -3,11 +3,11 @@ from typing import List
 
 from pydantic import BaseModel
 
-from server import app, kaspad_client
+from server import app, htnd_client
 
 
 class BlockdagResponse(BaseModel):
-    networkName: str = "kaspa-mainnet"
+    networkName: str = "htn-mainnet"
     blockCount: str = "260890"
     headerCount: str = "2131312"
     tipHashes: List[str] = ["78273854a739e3e379dfd34a262bbe922400d8e360e30e3f31228519a334350a"]
@@ -23,5 +23,5 @@ async def get_blockdag():
     """
     Get some global Kaspa BlockDAG information
     """
-    resp = await kaspad_client.request("getBlockDagInfoRequest")
+    resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]

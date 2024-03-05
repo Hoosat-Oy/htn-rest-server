@@ -2,7 +2,7 @@
 from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel
 
-from server import app, kaspad_client
+from server import app, htnd_client
 
 current_blue_score_data = {
     "blue_score": 0
@@ -18,7 +18,7 @@ async def get_virtual_selected_parent_blue_score():
     """
     Returns the blue score of virtual selected parent
     """
-    resp = await kaspad_client.request("getVirtualSelectedParentBlueScoreRequest")
+    resp = await htnd_client.request("getVirtualSelectedParentBlueScoreRequest")
     return resp["getVirtualSelectedParentBlueScoreResponse"]
 
 
@@ -26,5 +26,5 @@ async def get_virtual_selected_parent_blue_score():
 @repeat_every(seconds=5)
 async def update_blue_score():
     global current_blue_score_data
-    resp = await kaspad_client.request("getVirtualSelectedParentBlueScoreRequest")
+    resp = await htnd_client.request("getVirtualSelectedParentBlueScoreRequest")
     current_blue_score_data["blue_score"] = int(resp["getVirtualSelectedParentBlueScoreResponse"]["blueScore"])
