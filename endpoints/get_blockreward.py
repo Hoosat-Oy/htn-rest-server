@@ -10,10 +10,10 @@ class BlockRewardResponse(BaseModel):
     blockreward: float = 12000132
 
 
-@app.get("/info/blockreward", response_model=BlockRewardResponse | str, tags=["Kaspa network info"])
+@app.get("/info/blockreward", response_model=BlockRewardResponse , tags=["HTN info"])
 async def get_blockreward(stringOnly: bool = False):
     """
-    Returns the current blockreward in KAS/block
+    Returns the current blockreward in HTN/block
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
     daa_score = int(resp["getBlockDagInfoResponse"]["virtualDaaScore"])

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from helper import get_kas_price
+from helper import get_htn_price
 from server import app, htnd_client
 
 
@@ -10,14 +10,14 @@ class MarketCapResponse(BaseModel):
     marketcap: int = 12000132
 
 
-@app.get("/info/marketcap", response_model=MarketCapResponse | str, tags=["Kaspa network info"])
+@app.get("/info/marketcap", response_model=MarketCapResponse , tags=["HTN info"])
 async def get_marketcap(stringOnly: bool = False):
     """
-    Get $KAS price and market cap. Price info is from coingecko.com
+    Get $HTN price and market cap. Price info is from coingecko.com
     """
-    kas_price = await get_kas_price()
+    htn_price = await get_htn_price()
     resp = await htnd_client.request("getCoinSupplyRequest")
-    mcap = round(float(resp["getCoinSupplyResponse"]["circulatingSompi"]) / 100000000 * kas_price)
+    mcap = round(float(resp["getCoinSupplyResponse"]["circulatingSompi"]) / 100000000 * htn_price)
 
     if not stringOnly:
         return {

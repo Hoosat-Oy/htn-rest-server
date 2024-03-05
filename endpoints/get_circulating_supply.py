@@ -12,10 +12,10 @@ class CoinSupplyResponse(BaseModel):
     maxSupply: str = "2900000000000000000"
 
 
-@app.get("/info/coinsupply", response_model=CoinSupplyResponse, tags=["Kaspa network info"])
+@app.get("/info/coinsupply", response_model=CoinSupplyResponse, tags=["HTN info"])
 async def get_coinsupply():
     """
-    Get $KAS coin supply information
+    Get $HTN coin supply information
     """
     resp = await htnd_client.request("getCoinSupplyRequest")
     return {
@@ -24,11 +24,11 @@ async def get_coinsupply():
         "maxSupply": resp["getCoinSupplyResponse"]["maxSompi"]
     }
 
-@app.get("/info/coinsupply/circulating", tags=["Kaspa network info"],
+@app.get("/info/coinsupply/circulating", tags=["HTN info"],
          response_class=PlainTextResponse)
 async def get_circulating_coins(in_billion : bool = False):
     """
-    Get circulating amount of $KAS token as numerical value
+    Get circulating amount of $HTN token as numerical value
     """
     resp = await htnd_client.request("getCoinSupplyRequest")
     coins = str(float(resp["getCoinSupplyResponse"]["circulatingSompi"]) / 100000000)
@@ -38,11 +38,11 @@ async def get_circulating_coins(in_billion : bool = False):
         return coins
 
 
-@app.get("/info/coinsupply/total", tags=["Kaspa network info"],
+@app.get("/info/coinsupply/total", tags=["HTN info"],
          response_class=PlainTextResponse)
 async def get_total_coins():
     """
-    Get total amount of $KAS token as numerical value
+    Get total amount of $HTN token as numerical value
     """
     resp = await htnd_client.request("getCoinSupplyRequest")
     return str(float(resp["getCoinSupplyResponse"]["circulatingSompi"]) / 100000000)

@@ -30,7 +30,7 @@ class MaxHashrateResponse(BaseModel):
     blockheader: BlockHeader
 
 
-@app.get("/info/hashrate", response_model=HashrateResponse | str, tags=["Kaspa network info"])
+@app.get("/info/hashrate", response_model=HashrateResponse , tags=["HTN info"])
 async def get_hashrate(stringOnly: bool = False):
     """
     Returns the current hashrate for Kaspa network in TH/s.
@@ -49,7 +49,7 @@ async def get_hashrate(stringOnly: bool = False):
         return f"{hashrate_in_th:.01f}"
 
 
-@app.get("/info/hashrate/max", response_model=MaxHashrateResponse, tags=["Kaspa network info"])
+@app.get("/info/hashrate/max", response_model=MaxHashrateResponse, tags=["HTN info"])
 @sql_db_only
 async def get_max_hashrate():
     """

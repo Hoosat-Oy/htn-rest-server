@@ -16,7 +16,7 @@ from endpoints.get_marketcap import get_marketcap
 from endpoints.get_transactions import get_transaction
 from endpoints.get_virtual_chain_blue_score import get_virtual_selected_parent_blue_score
 from endpoints.htnd_requests.submit_transaction_request import submit_a_new_transaction
-from helper import get_kas_market_data
+from helper import get_htn_market_data
 from server import app, htnd_client
 
 IS_SQL_DB_CONFIGURED = os.getenv("SQL_URI") is not None
@@ -40,7 +40,7 @@ async def startup():
     if IS_SQL_DB_CONFIGURED:
         await create_all(drop=False)
     # get htnd
-    await get_kas_market_data()
+    await get_htn_market_data()
 
     # find htnd before staring webserver
     await htnd_client.initialize_all()

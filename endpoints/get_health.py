@@ -24,7 +24,7 @@ class HealthResponse(BaseModel):
     htndServers: List[HtndResponse]
 
 
-@app.get("/info/health", response_model=HealthResponse, tags=["Kaspa network info"])
+@app.get("/info/health", response_model=HealthResponse, tags=["HTN info"])
 async def health_state():
     """
     Returns the current hashrate for Kaspa network in TH/s.
