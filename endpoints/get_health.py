@@ -48,7 +48,7 @@ async def health_state():
             "isSynced": htnd_info.is_synced,
             "isUtxoIndexed": htnd_info.is_utxo_indexed,
             "p2pId": hashlib.sha256(htnd_info.p2p_id.encode()).hexdigest(),
-            "htndHost": f"HTND_HOST_{i + 1}",
+            "htndHost": f"KASPAD_HOST_{i + 1}",
             "serverVersion": htnd_info.server_version
         })
 

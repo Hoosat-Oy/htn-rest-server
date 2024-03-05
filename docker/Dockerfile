@@ -4,7 +4,7 @@ ARG REPO_DIR
 
 EXPOSE 8000
 
-ENV HTND_HOST_1=n.seeder1.htnd.net:16110
+ENV KASPAD_HOST_1=n.seeder1.htnd.net:16110
 ARG version
 ENV VERSION=$version
 
