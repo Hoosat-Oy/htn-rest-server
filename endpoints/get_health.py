@@ -27,7 +27,7 @@ class HealthResponse(BaseModel):
 @app.get("/info/health", response_model=HealthResponse, tags=["HTN info"])
 async def health_state():
     """
-    Returns the current hashrate for Kaspa network in TH/s.
+    Returns the current hashrate for Hoosat network in TH/s.
     """
     await htnd_client.initialize_all()
 

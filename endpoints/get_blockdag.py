@@ -21,7 +21,7 @@ class BlockdagResponse(BaseModel):
 @app.get("/info/blockdag", response_model=BlockdagResponse, tags=["HTN info"])
 async def get_blockdag():
     """
-    Get some global Kaspa BlockDAG information
+    Get some global Hoosat BlockDAG information
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]

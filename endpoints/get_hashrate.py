@@ -33,7 +33,7 @@ class MaxHashrateResponse(BaseModel):
 @app.get("/info/hashrate", response_model=HashrateResponse , tags=["HTN info"])
 async def get_hashrate(stringOnly: bool = False):
     """
-    Returns the current hashrate for Kaspa network in TH/s.
+    Returns the current hashrate for Hoosat network in TH/s.
     """
 
     resp = await htnd_client.request("getBlockDagInfoRequest")
@@ -53,7 +53,7 @@ async def get_hashrate(stringOnly: bool = False):
 @sql_db_only
 async def get_max_hashrate():
     """
-    Returns the current hashrate for Kaspa network in TH/s.
+    Returns the current hashrate for Hoosat network in TH/s.
     """
     maxhash_last_value = json.loads((await KeyValueStore.get("maxhash_last_value")) or "{}")
     maxhash_last_bluescore = int((await KeyValueStore.get("maxhash_last_bluescore")) or 0)

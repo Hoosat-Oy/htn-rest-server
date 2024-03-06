@@ -11,10 +11,10 @@ class BalanceResponse(BaseModel):
     balance: int = 38240000000
 
 
-@app.get("/addresses/{htnAddress}/balance", response_model=BalanceResponse, tags=["Kaspa addresses"])
+@app.get("/addresses/{htnAddress}/balance", response_model=BalanceResponse, tags=["Hoosat addresses"])
 async def get_balance_from_htn_address(
         htnAddress: str = Path(
-            description="Kaspa address as string e.g. htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+            description="Hoosat address as string e.g. htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^htn\:[a-z0-9]{61,63}$")):
     """
     Get balance for a given htn address

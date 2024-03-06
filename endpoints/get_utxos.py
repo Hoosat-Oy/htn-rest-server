@@ -29,9 +29,9 @@ class UtxoResponse(BaseModel):
     utxoEntry: UtxoModel
 
 
-@app.get("/addresses/{htnAddress}/utxos", response_model=List[UtxoResponse], tags=["Kaspa addresses"])
+@app.get("/addresses/{htnAddress}/utxos", response_model=List[UtxoResponse], tags=["Hoosat addresses"])
 async def get_utxos_for_address(htnAddress: str = Path(
-    description="Kaspa address as string e.g. htn:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
+    description="Hoosat address as string e.g. htn:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
     regex="^htn\:[a-z0-9]{61,63}$")):
     """
     Lists all open utxo for a given htn address

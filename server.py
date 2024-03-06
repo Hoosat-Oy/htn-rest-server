@@ -17,8 +17,8 @@ from htnd.HtndMultiClient import HtndMultiClient
 fastapi.logger.logger.setLevel(logging.WARNING)
 
 app = FastAPI(
-    title="Kaspa REST-API server",
-    description="This server is to communicate with htn network via REST-API",
+    title="Hoosat Network REST-API server",
+    description="This server is to communicate with HTN network via REST-API",
     version=os.getenv("VERSION", "tbd"),
     contact={
         "name": "lAmeR1"

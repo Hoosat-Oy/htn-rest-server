@@ -14,7 +14,7 @@ class PriceResponse(BaseModel):
 @app.get("/info/price", response_model=PriceResponse, tags=["HTN info"])
 async def get_price(stringOnly: bool = False):
     """
-    Returns the current price for Kaspa in USD.
+    Returns the current price for Hoosat in USD.
     """
     if stringOnly:
         return PlainTextResponse(content=str(await get_htn_price()))

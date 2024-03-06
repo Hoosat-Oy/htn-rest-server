@@ -7,7 +7,7 @@ from google.protobuf import json_format
 from grpc._channel import _MultiThreadedRendezvous
 
 from . import messages_pb2_grpc
-from .messages_pb2 import KaspadMessage
+from .messages_pb2 import HoosatdMessage
 
 
 MAX_MESSAGE_LENGTH = 1024 * 1024 * 1024  # 1GB
@@ -58,7 +58,7 @@ class HtndThread(object):
                     self.__queue.put_nowait("done")
                     return json_format.MessageToDict(resp)
             except grpc.aio._call.AioRpcError as e:
-                raise KaspadCommunicationError(str(e))
+                raise HoosatdCommunicationError(str(e))
 
     async def notify(self, command, params=None, callback_func=None):
         try:
@@ -70,10 +70,10 @@ class HtndThread(object):
             print("loop done...")
 
         except (grpc.aio._call.AioRpcError, _MultiThreadedRendezvous) as e:
-            raise KaspadCommunicationError(str(e))
+            raise HoosatdCommunicationError(str(e))
 
     async def yield_cmd(self, cmd, params=None):
-        msg = KaspadMessage()
+        msg = HoosatdMessage()
         msg2 = getattr(msg, cmd)
         payload = params
 
@@ -88,7 +88,7 @@ class HtndThread(object):
         await self.__queue.get()
 
     def yield_cmd_sync(self, cmd, params=None):
-        msg = KaspadMessage()
+        msg = HoosatdMessage()
         msg2 = getattr(msg, cmd)
         payload = params
 

@@ -41,14 +41,14 @@ class PreviousOutpointLookupMode(str, Enum):
 @app.get("/addresses/{htnAddress}/transactions",
          response_model=TransactionForAddressResponse,
          response_model_exclude_unset=True,
-         tags=["Kaspa addresses"],
+         tags=["Hoosat addresses"],
          deprecated=True)
 @sql_db_only
 async def get_transactions_for_address(
         htnAddress: str = Path(
-            description="Kaspa address as string e.g. "
-                        "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
-            regex="^htn\:[a-z0-9]{61,63}$")):
+            description="Hoosat address as string e.g. "
+                        "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+            regex="^hoosat\:[a-z0-9]{61,63}$")):
     """
     Get all transactions for a given address from database
     """
@@ -87,11 +87,11 @@ async def get_transactions_for_address(
 @app.get("/addresses/{htnAddress}/full-transactions",
          response_model=List[TxModel],
          response_model_exclude_unset=True,
-         tags=["Kaspa addresses"])
+         tags=["Hoosat addresses"])
 @sql_db_only
 async def get_full_transactions_for_address(
         htnAddress: str = Path(
-            description="Kaspa address as string e.g. "
+            description="Hoosat address as string e.g. "
                         "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^htn\:[a-z0-9]{61,63}$"),
         limit: int = Query(
@@ -131,11 +131,11 @@ async def get_full_transactions_for_address(
 
 @app.get("/addresses/{htnAddress}/transactions-count",
          response_model=TransactionCount,
-         tags=["Kaspa addresses"])
+         tags=["Hoosat addresses"])
 @sql_db_only
 async def get_transaction_count_for_address(
         htnAddress: str = Path(
-            description="Kaspa address as string e.g. "
+            description="Hoosat address as string e.g. "
                         "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^htn\:[a-z0-9]{61,63}$")
 ):
