@@ -38,14 +38,14 @@ class PreviousOutpointLookupMode(str, Enum):
     full = "full"
 
 
-@app.get("/addresses/{htnAddress}/transactions",
+@app.get("/addresses/{hoosatAddress}/transactions",
          response_model=TransactionForAddressResponse,
          response_model_exclude_unset=True,
          tags=["Hoosat addresses"],
          deprecated=True)
 @sql_db_only
 async def get_transactions_for_address(
-        htnAddress: str = Path(
+        hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
                         "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^hoosat\:[a-z0-9]{61,63}$")):
@@ -56,7 +56,7 @@ async def get_transactions_for_address(
     #
     # LEFT JOIN transactions_inputs ON transactions_inputs.previous_outpoint_hash = transactions_outputs.transaction_id AND transactions_inputs.previous_outpoint_index::int = transactions_outputs.index
     #
-    # WHERE "script_public_key_address" = 'htn:qp7d7rzrj34s2k3qlxmguuerfh2qmjafc399lj6606fc7s69l84h7mrj49hu6'
+    # WHERE "script_public_key_address" = 'hoosat:qp7d7rzrj34s2k3qlxmguuerfh2qmjafc399lj6606fc7s69l84h7mrj49hu6'
     #
     # ORDER by transactions_outputs.transaction_id
     async with async_session() as session:
@@ -67,10 +67,10 @@ async def get_transactions_for_address(
             FROM transactions
 			LEFT JOIN transactions_outputs ON transactions.transaction_id = transactions_outputs.transaction_id
 			LEFT JOIN transactions_inputs ON transactions_inputs.previous_outpoint_hash = transactions.transaction_id AND transactions_inputs.previous_outpoint_index = transactions_outputs.index
-            WHERE "script_public_key_address" = :htnAddress
+            WHERE "script_public_key_address" = :hoosatAddress
 			ORDER by transactions.block_time DESC
 			LIMIT 500"""),
-                                     {'htnAddress': htnAddress})
+                                     {'hoosatAddress': hoosatAddress})
 
         resp = resp.all()
 
@@ -84,15 +84,15 @@ async def get_transactions_for_address(
     }
 
 
-@app.get("/addresses/{htnAddress}/full-transactions",
+@app.get("/addresses/{hoosatAddress}/full-transactions",
          response_model=List[TxModel],
          response_model_exclude_unset=True,
          tags=["Hoosat addresses"])
 @sql_db_only
 async def get_full_transactions_for_address(
-        htnAddress: str = Path(
+        hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
-                        "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+                        "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^htn\:[a-z0-9]{61,63}$"),
         limit: int = Query(
             description="The number of records to get",
@@ -116,7 +116,7 @@ async def get_full_transactions_for_address(
         # Doing it this way as opposed to adding it directly in the IN clause
         # so I can re-use the same result in tx_list, TxInput and TxOutput
         tx_within_limit_offset = await s.execute(select(TxAddrMapping.transaction_id)
-                                                 .filter(TxAddrMapping.address == htnAddress)
+                                                 .filter(TxAddrMapping.address == hoosatAddress)
                                                  .limit(limit)
                                                  .offset(offset)
                                                  .order_by(TxAddrMapping.block_time.desc())
@@ -129,14 +129,14 @@ async def get_full_transactions_for_address(
                                          resolve_previous_outpoints)
 
 
-@app.get("/addresses/{htnAddress}/transactions-count",
+@app.get("/addresses/{hoosatAddress}/transactions-count",
          response_model=TransactionCount,
          tags=["Hoosat addresses"])
 @sql_db_only
 async def get_transaction_count_for_address(
-        htnAddress: str = Path(
+        hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
-                        "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+                        "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
             regex="^htn\:[a-z0-9]{61,63}$")
 ):
     """
@@ -144,7 +144,7 @@ async def get_transaction_count_for_address(
     """
 
     async with async_session() as s:
-        count_query = select(func.count()).filter(TxAddrMapping.address == htnAddress)
+        count_query = select(func.count()).filter(TxAddrMapping.address == hoosatAddress)
 
         tx_count = await s.execute(count_query)
 
