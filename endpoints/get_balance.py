@@ -7,21 +7,21 @@ from server import app, htnd_client
 
 
 class BalanceResponse(BaseModel):
-    address: str = "htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00"
+    address: str = "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00"
     balance: int = 38240000000
 
 
-@app.get("/addresses/{htnAddress}/balance", response_model=BalanceResponse, tags=["Hoosat addresses"])
+@app.get("/addresses/{hoosatAddress}/balance", response_model=BalanceResponse, tags=["Hoosat addresses"])
 async def get_balance_from_htn_address(
-        htnAddress: str = Path(
-            description="Hoosat address as string e.g. htn:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
-            regex="^htn\:[a-z0-9]{61,63}$")):
+        hoosatAddress: str = Path(
+            description="Hoosat address as string e.g. hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+            regex="^hoosat\:[a-z0-9]{61,63}$")):
     """
     Get balance for a given htn address
     """
     resp = await htnd_client.request("getBalanceByAddressRequest",
                                        params={
-                                           "address": htnAddress
+                                           "address": hoosatAddress
                                        })
 
     try:
@@ -40,6 +40,6 @@ async def get_balance_from_htn_address(
         balance = 0
 
     return {
-        "address": htnAddress,
+        "address": hoosatAddress,
         "balance": balance
     }

@@ -24,24 +24,24 @@ class UtxoModel(BaseModel):
 
 
 class UtxoResponse(BaseModel):
-    address: str = "htn:qrzk988gtanp3nf76xkpexwud5cxfmfygqf42hz38pwea74s6qrj75jee85nj"
+    address: str = "hoosat:qrzk988gtanp3nf76xkpexwud5cxfmfygqf42hz38pwea74s6qrj75jee85nj"
     outpoint: OutpointModel
     utxoEntry: UtxoModel
 
 
-@app.get("/addresses/{htnAddress}/utxos", response_model=List[UtxoResponse], tags=["Hoosat addresses"])
-async def get_utxos_for_address(htnAddress: str = Path(
-    description="Hoosat address as string e.g. htn:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
-    regex="^htn\:[a-z0-9]{61,63}$")):
+@app.get("/addresses/{hoosatAddress}/utxos", response_model=List[UtxoResponse], tags=["Hoosat addresses"])
+async def get_utxos_for_address(hoosatAddress: str = Path(
+    description="Hoosat address as string e.g. hoosat:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
+    regex="^hoosat\:[a-z0-9]{61,63}$")):
     """
-    Lists all open utxo for a given htn address
+    Lists all open utxo for a given hoosat address
     """
     resp = await htnd_client.request("getUtxosByAddressesRequest",
                                        params={
-                                           "addresses": [htnAddress]
+                                           "addresses": [hoosatAddress]
                                        }, timeout=120)
     try:
-        return (utxo for utxo in resp["getUtxosByAddressesResponse"]["entries"] if utxo["address"] == htnAddress)
+        return (utxo for utxo in resp["getUtxosByAddressesResponse"]["entries"] if utxo["address"] == hoosatAddress)
     except KeyError:
         if "getUtxosByAddressesResponse" in resp and "error" in resp["getUtxosByAddressesResponse"]:
             raise HTTPException(status_code=400, detail=resp["getUtxosByAddressesResponse"]["error"])
