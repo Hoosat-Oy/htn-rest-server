@@ -17,8 +17,8 @@ from htnd.HtndMultiClient import HtndMultiClient
 fastapi.logger.logger.setLevel(logging.WARNING)
 
 app = FastAPI(
-    title="Hoosat Network REST-API server",
-    description="This server is to communicate with HTN network via REST-API",
+    title="Htn REST-API server",
+    description="This server is to communicate with htn network via REST-API",
     version=os.getenv("VERSION", "tbd"),
     contact={
         "name": "lAmeR1"
@@ -72,12 +72,12 @@ htnd_hosts = []
 
 for i in range(100):
     try:
-        htnd_hosts.append(os.environ[f"HTND_HOST_{i + 1}"].strip())
+        htnd_hosts.append(os.environ[f"HTND_HOSTS_{i + 1}"].strip())
     except KeyError:
         break
 
 if not htnd_hosts:
-    raise Exception('Please set at least HTND_HOST_1 environment variable.')
+    raise Exception('Please set at least HTND_HOSTS_1 environment variable.')
 
 htnd_client = HtndMultiClient(htnd_hosts)
 
