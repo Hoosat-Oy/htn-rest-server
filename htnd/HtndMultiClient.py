@@ -12,6 +12,7 @@ class HtndMultiClient(object):
 
     def __get_htnpad(self):
         for k in self.htnpads:
+           #if k.is_utxo_indexed and k.is_synced:
             if k.is_utxo_indexed and k.is_synced:
                 return k
 
