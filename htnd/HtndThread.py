@@ -7,7 +7,7 @@ from google.protobuf import json_format
 from grpc._channel import _MultiThreadedRendezvous
 
 from . import messages_pb2_grpc
-from .messages_pb2 import KaspadMessage
+from .messages_pb2 import HtndMessage
 
 
 MAX_MESSAGE_LENGTH = 1024 * 1024 * 1024  # 1GB

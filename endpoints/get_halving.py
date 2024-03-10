@@ -10,12 +10,12 @@ from server import app, htnd_client
 
 
 class HalvingResponse(BaseModel):
-    nextHalvingTimestamp: int = 1714720317000
-    nextHalvingDate: str = '2024-05-03 07:11:57 UTC'
-    nextHalvingAmount: float = 44
+    nextHalvingTimestamp: int = 1662837270000
+    nextHalvingDate: str = '2022-09-10 19:38:52 UTC'
+    nextHalvingAmount: float = 155.123123
 
 
-@app.get("/info/halving", response_model=HalvingResponse | str, tags=["Hoosat Network info"])
+@app.get("/info/halving", response_model=HalvingResponse | str, tags=["Hoosat network info"])
 async def get_halving(field: str | None = None):
     """
     Returns information about chromatic halving

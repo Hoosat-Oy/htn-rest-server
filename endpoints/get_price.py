@@ -3,7 +3,7 @@
 from pydantic import BaseModel
 from starlette.responses import PlainTextResponse
 
-from helper import get_htn_price, get_htn_market_data
+from helper import get_kas_price, get_kas_market_data
 from server import app
 
 
@@ -11,22 +11,22 @@ class PriceResponse(BaseModel):
     price: float = 0.025235
 
 
-@app.get("/info/price", response_model=PriceResponse | str, tags=["Hoosat Network info"])
+@app.get("/info/price", response_model=PriceResponse | str, tags=["Hoosat network info"])
 async def get_price(stringOnly: bool = False):
     """
-    Returns the current price for hoosat in USD.
+    Returns the current price for Htn in USD.
     """
     if stringOnly:
-        return PlainTextResponse(content=str(await get_htn_price()))
+        return PlainTextResponse(content=str(await get_kas_price()))
 
-    return {"price": await get_htn_price()}
+    return {"price": await get_kas_price()}
 
 
 @app.get("/info/market-data",
-         tags=["Hoosat Network info"],
+         tags=["Hoosat network info"],
          include_in_schema=False)
 async def get_market_data():
     """
-    Returns market data for hoosat.
+    Returns market data for kaspa.
     """
-    return await get_htn_market_data()
+    return await get_kas_market_data()

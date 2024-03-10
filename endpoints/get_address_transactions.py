@@ -41,7 +41,7 @@ class PreviousOutpointLookupMode(str, Enum):
 @app.get("/addresses/{hoosatAddress}/transactions",
          response_model=TransactionForAddressResponse,
          response_model_exclude_unset=True,
-         tags=["hoosat addresses"],
+         tags=["Hoosat addresses"],
          deprecated=True)
 @sql_db_only
 async def get_transactions_for_address(
@@ -87,7 +87,7 @@ async def get_transactions_for_address(
 @app.get("/addresses/{hoosatAddress}/full-transactions",
          response_model=List[TxModel],
          response_model_exclude_unset=True,
-         tags=["hoosat addresses"])
+         tags=["Hoosat addresses"])
 @sql_db_only
 async def get_full_transactions_for_address(
         hoosatAddress: str = Path(
@@ -131,7 +131,7 @@ async def get_full_transactions_for_address(
 
 @app.get("/addresses/{hoosatAddress}/transactions-count",
          response_model=TransactionCount,
-         tags=["hoosat addresses"])
+         tags=["Hoosat addresses"])
 @sql_db_only
 async def get_transaction_count_for_address(
         hoosatAddress: str = Path(

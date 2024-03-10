@@ -18,10 +18,10 @@ class BlockdagResponse(BaseModel):
     virtualDaaScore: str = "19989141"
 
 
-@app.get("/info/blockdag", response_model=BlockdagResponse, tags=["Hoosat Network info"])
+@app.get("/info/blockdag", response_model=BlockdagResponse, tags=["Hoosat network info"])
 async def get_blockdag():
     """
-    Get some global hoosat BlockDAG information
+    Get some global Htn BlockDAG information
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]

@@ -12,7 +12,7 @@ class CoinSupplyResponse(BaseModel):
     maxSupply: str = "2900000000000000000"
 
 
-@app.get("/info/coinsupply", response_model=CoinSupplyResponse, tags=["Hoosat Network info"])
+@app.get("/info/coinsupply", response_model=CoinSupplyResponse, tags=["Hoosat network info"])
 async def get_coinsupply():
     """
     Get $HTN coin supply information
@@ -24,7 +24,7 @@ async def get_coinsupply():
         "maxSupply": resp["getCoinSupplyResponse"]["maxSompi"]
     }
 
-@app.get("/info/coinsupply/circulating", tags=["Hoosat Network info"],
+@app.get("/info/coinsupply/circulating", tags=["Hoosat network info"],
          response_class=PlainTextResponse)
 async def get_circulating_coins(in_billion : bool = False):
     """
@@ -38,7 +38,7 @@ async def get_circulating_coins(in_billion : bool = False):
         return coins
 
 
-@app.get("/info/coinsupply/total", tags=["Hoosat Network info"],
+@app.get("/info/coinsupply/total", tags=["Hoosat network info"],
          response_class=PlainTextResponse)
 async def get_total_coins():
     """

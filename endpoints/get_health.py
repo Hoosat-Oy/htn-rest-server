@@ -12,7 +12,7 @@ from models.Transaction import Transaction
 from server import app, htnd_client
 
 
-class htndResponse(BaseModel):
+class HtndResponse(BaseModel):
     htndHost: str = ""
     serverVersion: str = "0.12.6"
     isUtxoIndexed: bool = True
@@ -21,13 +21,13 @@ class htndResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    htndServers: List[htndResponse]
+    htndServers: List[HtndResponse]
 
 
-@app.get("/info/health", response_model=HealthResponse, tags=["Hoosat Network info"])
+@app.get("/info/health", response_model=HealthResponse, tags=["Hoosat network info"])
 async def health_state():
     """
-    Returns the current hashrate for Hoosat Network in TH/s.
+    Returns the current hashrate for Hoosat network in TH/s.
     """
     await htnd_client.initialize_all()
 
@@ -48,7 +48,7 @@ async def health_state():
             "isSynced": htnd_info.is_synced,
             "isUtxoIndexed": htnd_info.is_utxo_indexed,
             "p2pId": hashlib.sha256(htnd_info.p2p_id.encode()).hexdigest(),
-            "htndHost": f"HTND_HOST_1{i + 1}",
+            "htndHost": f"HTND_HOST_{i + 1}",
             "serverVersion": htnd_info.server_version
         })
 

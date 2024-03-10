@@ -7,7 +7,7 @@ from server import app, htnd_client
 
 
 class NetworkResponse(BaseModel):
-    networkName: str = "hoosat-mainnet"
+    networkName: str = "kaspa-mainnet"
     blockCount: str = "261357"
     headerCount: str = "23138783"
     tipHashes: List[str] = [
@@ -24,10 +24,10 @@ class NetworkResponse(BaseModel):
     virtualDaaScore: str = "19989984"
 
 
-@app.get("/info/network", response_model=NetworkResponse, tags=["Hoosat Network info"])
+@app.get("/info/network", response_model=NetworkResponse, tags=["Hoosat network info"])
 async def get_network():
     """
-    Get some global Hoosat Network information
+    Get some global kaspa network information
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]

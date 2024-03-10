@@ -29,12 +29,12 @@ class UtxoResponse(BaseModel):
     utxoEntry: UtxoModel
 
 
-@app.get("/addresses/{hoosatAddress}/utxos", response_model=List[UtxoResponse], tags=["hoosat addresses"])
+@app.get("/addresses/{hoosatAddress}/utxos", response_model=List[UtxoResponse], tags=["Htn addresses"])
 async def get_utxos_for_address(hoosatAddress: str = Path(
-    description="Hoosat address as string e.g. hoosat:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
-    regex="^hoosat\:[a-z0-9]{61,63}$")):
+    description="Htn address as string e.g. hoosat:qqkqkzjvr7zwxxmjxjkmxxdwju9kjs6e9u82uh59z07vgaks6gg62v8707g73",
+    regex="^kaspa\:[a-z0-9]{61,63}$")):
     """
-    Lists all open utxo for a given hoosat address
+    Lists all open utxo for a given kaspa address
     """
     resp = await htnd_client.request("getUtxosByAddressesRequest",
                                        params={
