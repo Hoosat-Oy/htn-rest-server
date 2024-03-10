@@ -3,7 +3,7 @@
 from fastapi import Path, HTTPException
 from pydantic import BaseModel
 
-from server import app, hoosatd_client
+from server import app, htnd_client
 
 
 class BalanceResponse(BaseModel):
@@ -11,7 +11,7 @@ class BalanceResponse(BaseModel):
     balance: int = 38240000000
 
 
-@app.get("/addresses/{hoosatAddress}/balance", response_model=BalanceResponse, tags=["Htn addresses"])
+@app.get("/addresses/{hoosatAddress}/balance", response_model=BalanceResponse, tags=["Hoosat addresses"])
 async def get_balance_from_hoosat_address(
         hoosatAddress: str = Path(
             description="Hoosat address as string e.g. hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
@@ -19,7 +19,7 @@ async def get_balance_from_hoosat_address(
     """
     Get balance for a given hoosat address
     """
-    resp = await hoosatd_client.request("getBalanceByAddressRequest",
+    resp = await htnd_client.request("getBalanceByAddressRequest",
                                        params={
                                            "address": hoosatAddress
                                        })
