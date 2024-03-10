@@ -93,7 +93,7 @@ async def get_full_transactions_for_address(
         hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
                         "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
-            regex="^htn\:[a-z0-9]{61,63}$"),
+            regex="^hoosat\:[a-z0-9]{61,63}$"),
         limit: int = Query(
             description="The number of records to get",
             ge=1,
@@ -137,7 +137,7 @@ async def get_transaction_count_for_address(
         hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
                         "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
-            regex="^htn\:[a-z0-9]{61,63}$")
+            regex="^hoosat\[a-z0-9]{61,63}$")
 ):
     """
     Count the number of transactions associated with this address
