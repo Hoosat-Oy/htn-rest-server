@@ -77,7 +77,7 @@ for i in range(100):
         break
 
 if not htnd_hosts:
-    raise Exception('Please set at least htnd_HOST_1 environment variable.')
+    raise Exception('Please set at least HTND_HOST_1 environment variable.')
 
 htnd_client = HtndMultiClient(htnd_hosts)
 
