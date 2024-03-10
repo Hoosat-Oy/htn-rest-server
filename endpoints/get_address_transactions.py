@@ -20,7 +20,7 @@ DESC_RESOLVE_PARAM = "Use this parameter if you want to fetch the TransactionInp
 
 class TransactionsReceivedAndSpent(BaseModel):
     tx_received: str
-    tx_spent: str 
+    tx_spent: str | None
     # received_amount: int = 38240000000
 
 
@@ -41,7 +41,7 @@ class PreviousOutpointLookupMode(str, Enum):
 @app.get("/addresses/{hoosatAddress}/transactions",
          response_model=TransactionForAddressResponse,
          response_model_exclude_unset=True,
-         tags=["Hoosat addresses"],
+         tags=["hoosat addresses"],
          deprecated=True)
 @sql_db_only
 async def get_transactions_for_address(
@@ -87,7 +87,7 @@ async def get_transactions_for_address(
 @app.get("/addresses/{hoosatAddress}/full-transactions",
          response_model=List[TxModel],
          response_model_exclude_unset=True,
-         tags=["Hoosat addresses"])
+         tags=["hoosat addresses"])
 @sql_db_only
 async def get_full_transactions_for_address(
         hoosatAddress: str = Path(
@@ -131,13 +131,13 @@ async def get_full_transactions_for_address(
 
 @app.get("/addresses/{hoosatAddress}/transactions-count",
          response_model=TransactionCount,
-         tags=["Hoosat addresses"])
+         tags=["hoosat addresses"])
 @sql_db_only
 async def get_transaction_count_for_address(
         hoosatAddress: str = Path(
             description="Hoosat address as string e.g. "
                         "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
-            regex="^hoosat\[a-z0-9]{61,63}$")
+            regex="^hoosat\:[a-z0-9]{61,63}$")
 ):
     """
     Count the number of transactions associated with this address

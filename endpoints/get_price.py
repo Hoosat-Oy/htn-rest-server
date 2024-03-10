@@ -11,10 +11,10 @@ class PriceResponse(BaseModel):
     price: float = 0.025235
 
 
-@app.get("/info/price", response_model=PriceResponse, tags=["HTN info"])
+@app.get("/info/price", response_model=PriceResponse | str, tags=["Hoosat Network info"])
 async def get_price(stringOnly: bool = False):
     """
-    Returns the current price for Hoosat in USD.
+    Returns the current price for hoosat in USD.
     """
     if stringOnly:
         return PlainTextResponse(content=str(await get_htn_price()))
@@ -23,10 +23,10 @@ async def get_price(stringOnly: bool = False):
 
 
 @app.get("/info/market-data",
-         tags=["HTN info"],
+         tags=["Hoosat Network info"],
          include_in_schema=False)
 async def get_market_data():
     """
-    Returns market data for htn.
+    Returns market data for hoosat.
     """
     return await get_htn_market_data()

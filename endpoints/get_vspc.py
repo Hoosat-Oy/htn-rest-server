@@ -19,7 +19,7 @@ class VscpResponse(BaseModel):
     acceptedTransactionIds: List[AcceptedTransactionIdsModel]
 
 
-@app.get("/info/get-vscp-from-block", response_model=VscpResponse, tags=["HTN info"])
+@app.get("/info/get-vscp-from-block", response_model=VscpResponse, tags=["Hoosat Network info"])
 async def get_virtual_selected_parent_chain_from_block(
         startHash: str,
         includeAcceptedTransactionIds: bool = True):

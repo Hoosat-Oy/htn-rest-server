@@ -27,7 +27,7 @@ class TxOutput(BaseModel):
     script_public_key: str
     script_public_key_address: str
     script_public_key_type: str
-    accepting_block_hash: str 
+    accepting_block_hash: str | None
 
     class Config:
         orm_mode = True
@@ -39,9 +39,9 @@ class TxInput(BaseModel):
     index: int
     previous_outpoint_hash: str
     previous_outpoint_index: str
-    previous_outpoint_resolved: TxOutput 
-    previous_outpoint_address: str 
-    previous_outpoint_amount: int 
+    previous_outpoint_resolved: TxOutput | None
+    previous_outpoint_address: str | None
+    previous_outpoint_amount: int | None
     signature_script: str
     sig_op_count: str
 
@@ -50,17 +50,17 @@ class TxInput(BaseModel):
 
 
 class TxModel(BaseModel):
-    subnetwork_id: str 
-    transaction_id: str 
-    hash: str 
-    mass: str 
-    block_hash: List[str] 
-    block_time: int 
-    is_accepted: bool 
-    accepting_block_hash: str 
-    accepting_block_blue_score: int 
-    inputs: List[TxInput] 
-    outputs: List[TxOutput] 
+    subnetwork_id: str | None
+    transaction_id: str | None
+    hash: str | None
+    mass: str | None
+    block_hash: List[str] | None
+    block_time: int | None
+    is_accepted: bool | None
+    accepting_block_hash: str | None
+    accepting_block_blue_score: int | None
+    inputs: List[TxInput] | None
+    outputs: List[TxOutput] | None
 
     class Config:
         orm_mode = True
@@ -78,7 +78,7 @@ class PreviousOutpointLookupMode(str, Enum):
 
 @app.get("/transactions/{transactionId}",
          response_model=TxModel,
-         tags=["Hoosat transactions"],
+         tags=["hoosat transactions"],
          response_model_exclude_unset=True)
 @sql_db_only
 async def get_transaction(response: Response,
@@ -162,7 +162,7 @@ async def get_transaction(response: Response,
 
 @app.post("/transactions/search",
           response_model=List[TxModel],
-          tags=["Hoosat transactions"],
+          tags=["hoosat transactions"],
           response_model_exclude_unset=True)
 @sql_db_only
 async def search_for_transactions(txSearch: TxSearch,

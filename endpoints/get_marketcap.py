@@ -10,7 +10,7 @@ class MarketCapResponse(BaseModel):
     marketcap: int = 12000132
 
 
-@app.get("/info/marketcap", response_model=MarketCapResponse , tags=["HTN info"])
+@app.get("/info/marketcap", response_model=MarketCapResponse | str, tags=["Hoosat Network info"])
 async def get_marketcap(stringOnly: bool = False):
     """
     Get $HTN price and market cap. Price info is from coingecko.com

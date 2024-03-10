@@ -7,7 +7,7 @@ from server import app, htnd_client
 
 
 class BlockdagResponse(BaseModel):
-    networkName: str = "htn-mainnet"
+    networkName: str = "hoosat-mainnet"
     blockCount: str = "260890"
     headerCount: str = "2131312"
     tipHashes: List[str] = ["78273854a739e3e379dfd34a262bbe922400d8e360e30e3f31228519a334350a"]
@@ -18,10 +18,10 @@ class BlockdagResponse(BaseModel):
     virtualDaaScore: str = "19989141"
 
 
-@app.get("/info/blockdag", response_model=BlockdagResponse, tags=["HTN info"])
+@app.get("/info/blockdag", response_model=BlockdagResponse, tags=["Hoosat Network info"])
 async def get_blockdag():
     """
-    Get some global Hoosat BlockDAG information
+    Get some global hoosat BlockDAG information
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
     return resp["getBlockDagInfoResponse"]
