@@ -12,7 +12,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from helper.LimitUploadSize import LimitUploadSize
-from htnd.HtndMultiClientt import HtndMultiClientt
+from htnd.HtndMultiClient import HtndMultiClient
 
 fastapi.logger.logger.setLevel(logging.WARNING)
 
@@ -79,7 +79,7 @@ for i in range(100):
 if not htnd_hosts:
     raise Exception('Please set at least htnd_HOST_1 environment variable.')
 
-htnd_client = HtndMultiClientt(htnd_hosts)
+htnd_client = HtndMultiClient(htnd_hosts)
 
 
 @app.exception_handler(Exception)
