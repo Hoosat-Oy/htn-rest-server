@@ -7,7 +7,7 @@ from google.protobuf import json_format
 from grpc._channel import _MultiThreadedRendezvous
 
 from . import messages_pb2_grpc
-from .messages_pb2 import HtndMessage
+from .messages_pb2 import KaspadMessage
 
 
 MAX_MESSAGE_LENGTH = 1024 * 1024 * 1024  # 1GB
@@ -73,7 +73,7 @@ class HtndThread(object):
             raise HtndCommunicationError(str(e))
 
     async def yield_cmd(self, cmd, params=None):
-        msg = HtndMessage()
+        msg = KaspadMessage()
         msg2 = getattr(msg, cmd)
         payload = params
 
@@ -88,7 +88,7 @@ class HtndThread(object):
         await self.__queue.get()
 
     def yield_cmd_sync(self, cmd, params=None):
-        msg = HtndMessage()
+        msg = KaspadMessage()
         msg2 = getattr(msg, cmd)
         payload = params
 
