@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from helper import get_kas_price
+from helper import get_htn_price
 from server import app, htnd_client
 
 
@@ -15,7 +15,7 @@ async def get_marketcap(stringOnly: bool = False):
     """
     Get $HTN price and market cap. Price info is from coingecko.com
     """
-    kas_price = await get_kas_price()
+    kas_price = await get_htn_price()
     resp = await htnd_client.request("getCoinSupplyRequest")
     mcap = round(float(resp["getCoinSupplyResponse"]["circulatingSompi"]) / 100000000 * kas_price)
 
