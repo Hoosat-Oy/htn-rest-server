@@ -27,7 +27,9 @@ async def get_blockreward(stringOnly: bool = False):
 
     if not stringOnly:
         return {
-            "blockreward": reward
+            "blockreward": reward,
+            "minerreward": reward * 0.95,
+            "devreward": reward * 0.05
         }
 
     else:
