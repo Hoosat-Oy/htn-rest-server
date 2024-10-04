@@ -14,6 +14,8 @@ from endpoints.get_hashrate import get_hashrate
 from endpoints.get_health import health_state
 from endpoints.get_marketcap import get_marketcap
 from endpoints.get_transactions import get_transaction
+from endpoints.get_mempool_entries import get_mempool_entries
+
 from endpoints.get_virtual_chain_blue_score import get_virtual_selected_parent_blue_score
 from endpoints.htnd_requests.submit_transaction_request import submit_a_new_transaction
 from helper import get_htn_market_data
@@ -26,7 +28,7 @@ print(
     f"{get_htnd_info}, {get_network}, {get_marketcap}, {get_hashrate}, {get_blockreward}"
     f"{get_halving} {health_state} {get_transaction}"
     f"{get_virtual_selected_parent_blue_score} {get_transactions_for_address}"
-    f"{submit_a_new_transaction} {get_price}")
+    f"{submit_a_new_transaction} {get_price} {get_mempool_entries}")
 
 if os.getenv('VSPC_REQUEST') == 'true':
     from endpoints.get_vspc import get_virtual_selected_parent_chain_from_block
