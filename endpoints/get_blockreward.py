@@ -33,6 +33,6 @@ async def get_blockreward(stringOnly: bool = False):
         }
 
     else:
-        return f"{reward:.2f}"
+        return f"{reward:.2f}\n{reward * 0.95}\n{reward * 0.05}"
 
 
