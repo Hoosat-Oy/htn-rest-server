@@ -8,6 +8,8 @@ from server import app, htnd_client
 
 class BlockRewardResponse(BaseModel):
     blockreward: float = 12000132
+    minerreward: float = 12000132
+    devreward: float = 12000132
 
 
 @app.get("/info/blockreward", response_model=BlockRewardResponse | str, tags=["Hoosat network info"])
