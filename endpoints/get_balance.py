@@ -1,7 +1,15 @@
 # encoding: utf-8
-
+import csv
+from io import StringIO
 from fastapi import Path, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import List
+from sqlalchemy.future import select
+
+from dbsession import async_session
+from endpoints import filter_fields, sql_db_only
+from models.Balance import Balance
 
 from server import app, htnd_client
 
@@ -9,6 +17,10 @@ from server import app, htnd_client
 class BalanceResponse(BaseModel):
     address: str = "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00"
     balance: int = 38240000000
+
+
+class BalanceResponses(BaseModel):
+    balances: List[BalanceResponse]
 
 
 @app.get("/addresses/{hoosatAddress}/balance", response_model=BalanceResponse, tags=["Hoosat addresses"])
@@ -34,8 +46,6 @@ async def get_balance_from_hoosat_address(
 
     try:
         balance = int(resp["balance"])
-
-    # return 0 if address is ok, but no utxos there
     except KeyError:
         balance = 0
 
@@ -43,3 +53,54 @@ async def get_balance_from_hoosat_address(
         "address": hoosatAddress,
         "balance": balance
     }
+
+
+@app.get("/balances/", response_model=BalanceResponses, tags=["Hoosat addresses"])
+async def get_balances():
+    """
+    Get balances of addresses.
+    """
+    async with async_session() as session:  
+        try:
+            result = await session.execute(select(Balance))  
+            balances = result.scalars().all()
+            non_zero_balances = [balance for balance in balances if balance.balance > 0]
+            sorted_balances = sorted(non_zero_balances, key=lambda balance: balance.balance, reverse=True)
+            return BalanceResponses(balances=[
+                BalanceResponse(address=balance.script_public_key_address, balance=balance.balance)
+                for balance in sorted_balances
+            ])
+        except Exception as e:
+            return BalanceResponses(balances=[])
+
+
+@app.get("/balances-csv", response_class=StreamingResponse, tags=["Hoosat addresses"]   )
+async def get_balances_csv():
+    """
+    Get balances of addresses in CSV format.
+    """
+    async with async_session() as session: 
+        try:
+            result = await session.execute(select(Balance))  
+            balances = result.scalars().all() 
+            non_zero_balances = [balance for balance in balances if balance.balance > 0]
+            sorted_balances = sorted(non_zero_balances, key=lambda balance: balance.balance, reverse=True)
+            
+            output = StringIO()
+            writer = csv.writer(output)
+            
+            writer.writerow(["Address", "Balance"])
+            
+            for balance in sorted_balances:
+                writer.writerow([balance.script_public_key_address, balance.balance])
+            
+            output.seek(0)
+            
+            return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=balances.csv"})
+        
+        except Exception as e:
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(["Address", "Balance"]) 
+            output.seek(0)
+            return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=balances.csv"})
