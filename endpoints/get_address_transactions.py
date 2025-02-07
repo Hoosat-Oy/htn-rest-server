@@ -85,9 +85,9 @@ async def get_transactions_for_address(
 
 
 @app.get("/addresses/{hoosatAddress}/full-transactions",
-         response_model=List[TxModel],
-         response_model_exclude_unset=True,
-         tags=["Hoosat addresses"])
+        response_model=List[TxModel],
+        response_model_exclude_unset=True,
+        tags=["Hoosat addresses"])
 @sql_db_only
 async def get_full_transactions_for_address(
         hoosatAddress: str = Path(
@@ -106,7 +106,7 @@ async def get_full_transactions_for_address(
         fields: str = "",
         resolve_previous_outpoints: PreviousOutpointLookupMode =
         Query(default="no",
-              description=DESC_RESOLVE_PARAM)):
+            description=DESC_RESOLVE_PARAM)):
     """
     Get all transactions for a given address from database.
     And then get their related full transaction data
@@ -116,13 +116,57 @@ async def get_full_transactions_for_address(
         # Doing it this way as opposed to adding it directly in the IN clause
         # so I can re-use the same result in tx_list, TxInput and TxOutput
         tx_within_limit_offset = await s.execute(select(TxAddrMapping.transaction_id)
-                                                 .filter(TxAddrMapping.address == hoosatAddress)
-                                                 .limit(limit)
-                                                 .offset(offset)
-                                                 .order_by(TxAddrMapping.block_time.desc())
-                                                 )
+                                                .filter(TxAddrMapping.address == hoosatAddress)
+                                                .limit(limit)
+                                                .offset(offset)
+                                                .order_by(TxAddrMapping.block_time.desc())
+                                                )
 
         tx_ids_in_page = [x[0] for x in tx_within_limit_offset.all()]
+
+    return await search_for_transactions(TxSearch(transactionIds=tx_ids_in_page),
+                                        fields,
+                                        resolve_previous_outpoints)
+    
+
+@app.get("/addresses/{hoosatAddress}/full-transactions/paged",
+         response_model=List[TxModel],
+         response_model_exclude_unset=True,
+         tags=["Hoosat addresses"])
+@sql_db_only
+async def get_full_transactions_for_address_paged(
+        hoosatAddress: str = Path(
+            description="Hoosat address as string e.g. "
+                        "hoosat:pzhh76qc82wzduvsrd9xh4zde9qhp0xc8rl7qu2mvl2e42uvdqt75zrcgpm00",
+            regex="^hoosat\:[a-z0-9]{61,63}$"),
+        page: int = Query(
+            description="Page number (1-based)",
+            ge=1,
+            default=1),
+        items_per_page: int = Query(
+            description="Number of records per page",
+            ge=1,
+            le=500,
+            default=50),
+        fields: str = "",
+        resolve_previous_outpoints: PreviousOutpointLookupMode =
+        Query(default="no",
+              description=DESC_RESOLVE_PARAM)):
+    """
+    Get all transactions for a given address from database.
+    Paginated using page number and items per page.
+    """
+
+    offset = (page - 1) * items_per_page
+
+    async with async_session() as s:
+        tx_within_page = await s.execute(select(TxAddrMapping.transaction_id)
+                                         .filter(TxAddrMapping.address == hoosatAddress)
+                                         .limit(items_per_page)
+                                         .offset(offset)
+                                         .order_by(TxAddrMapping.block_time.desc()))
+
+        tx_ids_in_page = [x[0] for x in tx_within_page.all()]
 
     return await search_for_transactions(TxSearch(transactionIds=tx_ids_in_page),
                                          fields,
