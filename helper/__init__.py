@@ -16,7 +16,10 @@ aiocache.logger.setLevel(logging.WARNING)
 
 @cached(ttl=120)
 async def get_htn_price():
-    return (await get_htn_market_data())["current_price"]["usd"]
+    market_data = await get_htn_market_data()
+    if market_data is None:
+        raise ValueError("Market data could not be retrieved")
+    return market_data.get("current_price", {}).get("usd", "Price unavailable")
 
 
 @cached(ttl=300)
