@@ -20,16 +20,16 @@ class VerboseDataModel(BaseModel):
     hash: str = ""
     difficulty: float = 0
     selectedParentHash: str = ""
-    transactionIds: List[str] | None = [""]
+    transactionIds: List[str] | None = []
     blueScore: str = ""
     childrenHashes: List[str] | None = None
-    mergeSetBluesHashes: List[str] = [""]
-    mergeSetRedsHashes: List[str] = [""]
+    mergeSetBluesHashes: List[str] = []
+    mergeSetRedsHashes: List[str] = []
     isChainBlock: bool | None = None
 
 
 class ParentHashModel(BaseModel):
-    parentHashes: List[str] = [""]
+    parentHashes: List[str] = []
 
 
 class BlockHeader(BaseModel):
