@@ -17,34 +17,34 @@ IS_SQL_DB_CONFIGURED = os.getenv("SQL_URI") is not None
 
 
 class VerboseDataModel(BaseModel):
-    hash: str = "18c7afdf8f447ca06adb8b4946dc45f5feb1188c7d177da6094dfbc760eca699"
-    difficulty: float = 4102204523252.94,
-    selectedParentHash: str = "580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"
-    transactionIds: List[str] | None = ["533f8314bf772259fe517f53507a79ebe61c8c6a11748d93a0835551233b3311"]
-    blueScore: str = "18483232"
+    hash: str = ""
+    difficulty: float = 0
+    selectedParentHash: str = ""
+    transactionIds: List[str] | None = [""]
+    blueScore: str = ""
     childrenHashes: List[str] | None = None
-    mergeSetBluesHashes: List[str] = ["580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"]
-    mergeSetRedsHashes: List[str] = ["580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"]
+    mergeSetBluesHashes: List[str] = [""]
+    mergeSetRedsHashes: List[str] = [""]
     isChainBlock: bool | None = None
 
 
 class ParentHashModel(BaseModel):
-    parentHashes: List[str] = ["580f65c8da9d436480817f6bd7c13eecd9223b37f0d34ae42fb17e1e9fda397e"]
+    parentHashes: List[str] = [""]
 
 
 class BlockHeader(BaseModel):
-    version: int = 1
-    hashMerkleRoot: str = "e6641454e16cff4f232b899564eeaa6e480b66069d87bee6a2b2476e63fcd887"
-    acceptedIdMerkleRoot: str = "9bab45b027a0b2b47135b6f6f866e5e4040fc1fdf2fe56eb0c90a603ce86092b"
-    utxoCommitment: str = "236d5f9ffd19b317a97693322c3e2ae11a44b5df803d71f1ccf6c2393bc6143c"
-    timestamp: str = "1656450648874"
-    bits: int = 455233226
-    nonce: str = "14797571275553019490"
-    daaScore: str = "19984482"
-    blueWork: str = "2d1b3f04f8a0dcd31"
+    version: int = 0
+    hashMerkleRoot: str = ""
+    acceptedIdMerkleRoot: str = ""
+    utxoCommitment: str = ""
+    timestamp: str = ""
+    bits: int = 0
+    nonce: str = ""
+    daaScore: str = ""
+    blueWork: str = ""
     parents: List[ParentHashModel]
-    blueScore: str = "18483232"
-    pruningPoint: str = "5d32a9403273a34b6551b84340a1459ddde2ae6ba59a47987a6374340ba41d5d"
+    blueScore: str = ""
+    pruningPoint: str = ""
 
 
 class BlockModel(BaseModel):
@@ -54,10 +54,7 @@ class BlockModel(BaseModel):
 
 
 class BlockResponse(BaseModel):
-    blockHashes: List[str] = ["44edf9bfd32aa154bfad64485882f184372b64bd60565ba121b42fc3cb1238f3",
-                              "18c7afdf8f447ca06adb8b4946dc45f5feb1188c7d177da6094dfbc760eca699",
-                              "9a822351cd293a653f6721afec1646bd1690da7124b5fbe87001711406010604",
-                              "2fda0dad4ec879b4ad02ebb68c757955cab305558998129a7de111ab852e7dcb"]
+    blockHashes: List[str] = [""]
     blocks: List[BlockModel] | None
 
 
