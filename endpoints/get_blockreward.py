@@ -19,6 +19,8 @@ async def get_blockreward(stringOnly: bool = False):
     Returns the current blockreward in HTN/block
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
+    if resp is  None: 
+        return "Request getBlockDagInfoRequest failed"
     daa_score = int(resp["getBlockDagInfoResponse"]["virtualDaaScore"])
 
     reward = 0

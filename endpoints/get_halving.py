@@ -22,6 +22,8 @@ async def get_halving(field: str | None = None):
     Returns information about chromatic halving
     """
     resp = await htnd_client.request("getBlockDagInfoRequest")
+    if resp is None:
+        return PlainTextResponse(content=str("Request getBlockDagInfoRequest failed"))
     daa_score = int(resp["getBlockDagInfoResponse"]["virtualDaaScore"])
 
     future_reward = 0

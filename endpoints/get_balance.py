@@ -38,15 +38,18 @@ async def get_balance_from_hoosat_address(
                                        })
 
     try:
-        resp = resp["getBalanceByAddressResponse"]
+        if resp is not None:
+            resp = resp["getBalanceByAddressResponse"]
     except KeyError:
-        if "getUtxosByAddressesResponse" in resp and "error" in resp["getUtxosByAddressesResponse"]:
-            raise HTTPException(status_code=400, detail=resp["getUtxosByAddressesResponse"]["error"])
-        else:
-            raise
-
+        if resp is not None:
+            if "getUtxosByAddressesResponse" in resp and "error" in resp["getUtxosByAddressesResponse"]:
+                raise HTTPException(status_code=400, detail=resp["getUtxosByAddressesResponse"]["error"])
+            else:
+                raise
+    balance = 0
     try:
-        balance = int(resp["balance"])
+        if resp is not None:
+            balance = int(resp["balance"])
     except KeyError:
         balance = 0
 
@@ -110,7 +113,7 @@ async def get_balances_csv():
             return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=balances.csv"})
 
 @app.get("/addresses/balances/json/paged", response_model=BalanceResponses, tags=["Hoosat addresses"])
-async def get_balances(page: int = Query(1, ge=1), items_per_page: int = Query(10, ge=1)):
+async def get_balances_paged(page: int = Query(1, ge=1), items_per_page: int = Query(10, ge=1)):
     """
     Get balances of addresses with pagination.
     """
@@ -135,7 +138,7 @@ async def get_balances(page: int = Query(1, ge=1), items_per_page: int = Query(1
 
 
 @app.get("/addresses/balances/csv/paged", response_class=StreamingResponse, tags=["Hoosat addresses"])
-async def get_balances_csv(page: int = Query(1, ge=1), items_per_page: int = Query(10, ge=1)):
+async def get_balances_csv_paged(page: int = Query(1, ge=1), items_per_page: int = Query(10, ge=1)):
     """
     Get balances of addresses in CSV format with pagination.
     """
