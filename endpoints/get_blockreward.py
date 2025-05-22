@@ -29,7 +29,7 @@ async def get_blockreward(stringOnly: bool = False):
             break
 
     
-    bps = int(os.getenv("BPS", "1")),
+    bps = int(os.getenv("BPS", "1"))
     reward = reward / bps
 
     if not stringOnly:
