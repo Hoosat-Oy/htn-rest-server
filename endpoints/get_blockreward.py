@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import os
 from pydantic import BaseModel
 
 from helper.deflationary_table import DEFLATIONARY_TABLE
@@ -26,6 +27,10 @@ async def get_blockreward(stringOnly: bool = False):
         reward = DEFLATIONARY_TABLE[to_break_score]
         if daa_score < to_break_score:
             break
+
+    
+    bps = os.getenv("BPS", "1"),
+    reward = reward / bps
 
     if not stringOnly:
         return {
