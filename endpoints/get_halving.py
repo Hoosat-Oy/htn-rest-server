@@ -1,4 +1,5 @@
 # encoding: utf-8
+import os
 import time
 from datetime import datetime
 
@@ -33,6 +34,10 @@ async def get_halving(field: str | None = None):
             future_reward = DEFLATIONARY_TABLE[daa_list[i + 1]]
             daa_breakpoint = to_break_score
             break
+
+    
+    bps = int(os.getenv("BPS", "1"))
+    future_reward = future_reward / bps
 
     next_halving_timestamp = int(time.time() + (daa_breakpoint - daa_score))
 
