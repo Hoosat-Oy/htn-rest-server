@@ -10,6 +10,8 @@ from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from h11._util import LocalProtocolError, RemoteProtocolError
 
 from helper.LimitUploadSize import LimitUploadSize
 from htnd.HtndMultiClient import HtndMultiClient
@@ -48,6 +50,21 @@ class PingResponse(BaseModel):
     isSynced: bool = True
 
 
+
+class H11ErrorMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        try:
+            return await call_next(request)
+        except (LocalProtocolError, RemoteProtocolError) as exc:
+            logging.warning(f"Caught h11 protocol error: {exc}")
+            return JSONResponse(
+                status_code=400,
+                content={"message": "Invalid HTTP request received"}
+            )
+
+app.add_middleware(H11ErrorMiddleware)
+
+
 @app.get("/ping",
          include_in_schema=False,
          response_model=PingResponse)
@@ -57,6 +74,8 @@ async def ping_server():
     """
     try:
         info = await htnd_client.htnds[0].request("getInfoRequest")
+        if not info or not info.get("getInfoResponse"):
+            raise HTTPException(status_code=500, detail="Invalid response from htnd.")
         assert info["getInfoResponse"]["isSynced"] is True
 
         return {
