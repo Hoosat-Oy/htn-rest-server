@@ -38,7 +38,7 @@ async def get_halving(field: str | None = None):
             break
 
     
-    bps = int(os.getenv("BPS", "1"))
+    bps = int(os.getenv("BPS", "5"))
     future_reward = future_reward / bps
 
     next_halving_timestamp = int(time.time() + (daa_breakpoint - daa_score))
