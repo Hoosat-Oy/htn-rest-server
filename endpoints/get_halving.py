@@ -43,8 +43,7 @@ async def get_halving(field: str | None = None):
 
     future_reward = future_reward / bps
 
-    next_halving_timestamp = int(time.time() + (daa_breakpoint - daa_score))
-    next_halving_timestamp = next_halving_timestamp / bps
+    next_halving_timestamp = int(time.time() + ((daa_breakpoint - daa_score) / bps))
 
     if field == "nextHalvingTimestamp":
         return PlainTextResponse(content=str(next_halving_timestamp))
