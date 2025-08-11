@@ -38,12 +38,15 @@ async def get_halving(field: str | None = None):
             break
 
     bps = int(os.getenv("BPS", "1"))
+    next_halving_timestamp = int(time.time() + (daa_breakpoint - daa_score))
     if daa_score >= 43334184:
         bps = int(os.getenv("BPS", "5"))
+        after_nocturne_daa_score = daa_score - 43334183
+        after_nocturne_daa_breakpoint = daa_breakpoint - 43334183
+        next_halving_timestamp = int(time.time() + ((after_nocturne_daa_breakpoint - after_nocturne_daa_score) / bps))
 
     future_reward = future_reward / bps
 
-    next_halving_timestamp = int(time.time() + ((daa_breakpoint - daa_score) / bps))
 
     if field == "nextHalvingTimestamp":
         return PlainTextResponse(content=str(next_halving_timestamp))
