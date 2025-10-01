@@ -173,10 +173,87 @@ async def get_blocks_from_bluescore(response: Response,
     } for block in blocks]
 
 
+@app.get("/blocks-range", response_model=List[BlockModel], tags=["Hoosat blocks"])
+async def get_blocks_range(response: Response,
+                           fromBlueScore: int = Query(..., description="Starting blueScore (inclusive)"),
+                           toBlueScore: int = Query(..., description="Ending blueScore (inclusive)"),
+                           includeTransactions: bool = False,
+                           limit: int = Query(1000, le=5000, description="Max blocks to return")):
+    """
+    Get blocks within a blueScore range. Useful for indexing historical data.
+    Returns blocks ordered by blueScore ascending.
+    Maximum 5000 blocks per request to prevent excessive load.
+    """
+    response.headers["X-Data-Source"] = "Database"
+
+    # Validate range
+    if fromBlueScore > toBlueScore:
+        raise HTTPException(status_code=400, detail="fromBlueScore must be <= toBlueScore")
+
+    if toBlueScore - fromBlueScore > 10000:
+        raise HTTPException(status_code=400,
+                            detail="Range too large. Maximum 10000 blueScore difference allowed")
+
+    blocks = await get_blocks_from_db_by_bluescore_range(fromBlueScore, toBlueScore, limit)
+
+    # Set cache headers based on how recent the data is
+    if toBlueScore > current_blue_score_data["blue_score"] - 20:
+        response.headers["Cache-Control"] = "no-store"
+    elif toBlueScore > current_blue_score_data["blue_score"] - 100:
+        response.headers["Cache-Control"] = "public, max-age=10"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=600"
+
+    return [{
+        "header": {
+            "version": block.version,
+            "hashMerkleRoot": block.hash_merkle_root,
+            "acceptedIdMerkleRoot": block.accepted_id_merkle_root,
+            "utxoCommitment": block.utxo_commitment,
+            "timestamp": round(block.timestamp.timestamp() * 1000),
+            "bits": block.bits,
+            "nonce": block.nonce,
+            "daaScore": block.daa_score,
+            "blueWork": block.blue_work,
+            "parents": [{"parentHashes": block.parents}],
+            "blueScore": block.blue_score,
+            "pruningPoint": block.pruning_point
+        },
+        "transactions": (txs := (await get_block_transactions(block.hash))) if includeTransactions else None,
+        "verboseData": {
+            "hash": block.hash,
+            "difficulty": block.difficulty,
+            "selectedParentHash": block.selected_parent_hash,
+            "transactionIds": [tx["verboseData"]["transactionId"] for tx in txs] if includeTransactions else None,
+            "blueScore": block.blue_score,
+            "childrenHashes": None,
+            "mergeSetBluesHashes": block.merge_set_blues_hashes,
+            "mergeSetRedsHashes": block.merge_set_reds_hashes,
+            "isChainBlock": None,
+        }
+    } for block in blocks]
+
+
 async def get_blocks_from_db_by_bluescore(blue_score):
     async with async_session() as s:
         blocks = (await s.execute(select(Block)
                                   .where(Block.blue_score == blue_score))).scalars().all()
+
+    return blocks
+
+
+async def get_blocks_from_db_by_bluescore_range(from_score: int, to_score: int, limit: int):
+    """
+    Get blocks within a blueScore range from the database
+    """
+    async with async_session() as s:
+        blocks = (await s.execute(
+            select(Block)
+            .where(Block.blue_score >= from_score)
+            .where(Block.blue_score <= to_score)
+            .order_by(Block.blue_score.asc())
+            .limit(limit)
+        )).scalars().all()
 
     return blocks
 
