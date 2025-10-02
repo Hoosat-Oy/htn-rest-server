@@ -45,8 +45,8 @@ class SubmitTransactionRequest(BaseModel):
 
 
 class SubmitTransactionResponse(BaseModel):
-    transactionId: str 
-    error: str 
+    transactionId: str | None = None
+    error: str | None = None 
 
 
 @app.post("/transactions",
