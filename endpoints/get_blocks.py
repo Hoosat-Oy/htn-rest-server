@@ -303,30 +303,29 @@ async def get_blocks_range_lightweight(response: Response,
 
 async def get_coinbase_payloads_batch(block_hashes):
     """
-    Get all coinbase transaction payloads for multiple blocks.
-    Returns list of payloads per block to handle DAG structure where
-    multiple blocks can have the same blueScore.
-    Much faster than loading full transaction data.
+    Get coinbase transaction payloads for multiple blocks.
+    Coinbase transactions have subnetwork_id = '0100000000000000000000000000000000000000'
     """
     if not block_hashes:
         return {}
 
     async with async_session() as s:
-        # Get only coinbase transactions (subnetwork_id = '0100000000000000000000000000000000000000')
+        # Get coinbase transactions (subnetwork_id for coinbase)
         transactions = await s.execute(
             select(Transaction.block_hash, Transaction.payload)
             .where(Transaction.block_hash.overlap(block_hashes))
             .where(Transaction.subnetwork_id == '0100000000000000000000000000000000000000')
+            .where(Transaction.payload.isnot(None))
+            .where(Transaction.payload != '')
         )
 
         result = {}
         for tx in transactions:
-            # Each block can be in multiple block_hash entries (DAG structure)
             for block_hash in tx.block_hash:
                 if block_hash in block_hashes:
                     if block_hash not in result:
                         result[block_hash] = []
-                    result[block_hash].append(tx.payload)  # Добавляем все payloads
+                    result[block_hash].append(tx.payload)
 
         return result
 
