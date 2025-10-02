@@ -183,6 +183,7 @@ async def get_blocks_range(response: Response,
     Get blocks within a blueScore range. Useful for indexing historical data.
     Returns blocks ordered by blueScore ascending.
     Maximum 5000 blocks per request to prevent excessive load.
+    When includeTransactions=True, limit is automatically reduced to 100 for performance.
     """
     response.headers["X-Data-Source"] = "Database"
 
@@ -204,6 +205,15 @@ async def get_blocks_range(response: Response,
     else:
         response.headers["Cache-Control"] = "public, max-age=600"
 
+    # Optimize transaction loading for multiple blocks
+    if includeTransactions and blocks:
+        # Get all transactions for all blocks in one query
+        block_hashes = [block.hash for block in blocks]
+        all_transactions = await get_transactions_for_multiple_blocks(block_hashes)
+        transactions_by_block = {block_hash: txs for block_hash, txs in all_transactions.items()}
+    else:
+        transactions_by_block = {}
+
     return [{
         "header": {
             "version": block.version,
@@ -219,12 +229,12 @@ async def get_blocks_range(response: Response,
             "blueScore": block.blue_score,
             "pruningPoint": block.pruning_point
         },
-        "transactions": (txs := (await get_block_transactions(block.hash))) if includeTransactions else None,
+        "transactions": transactions_by_block.get(block.hash, []) if includeTransactions else None,
         "verboseData": {
             "hash": block.hash,
             "difficulty": block.difficulty,
             "selectedParentHash": block.selected_parent_hash,
-            "transactionIds": [tx["verboseData"]["transactionId"] for tx in txs] if includeTransactions else None,
+            "transactionIds": [tx["verboseData"]["transactionId"] for tx in transactions_by_block.get(block.hash, [])] if includeTransactions else None,
             "blueScore": block.blue_score,
             "childrenHashes": None,
             "mergeSetBluesHashes": block.merge_set_blues_hashes,
@@ -365,3 +375,121 @@ async def get_block_transactions(blockId):
         })
 
     return tx_list
+
+
+async def get_transactions_for_multiple_blocks(block_hashes):
+    """
+    Optimized function to get transactions for multiple blocks in batch
+    Reduces N+1 query problem by loading all data in fewer queries
+    """
+    if not block_hashes:
+        return {}
+    
+    async with async_session() as s:
+        # Get all transactions for all blocks in one query
+        transactions = await s.execute(
+            select(Transaction)
+            .where(Transaction.block_hash.overlap(block_hashes))
+        )
+        transactions = transactions.scalars().all()
+        
+        if not transactions:
+            return {block_hash: [] for block_hash in block_hashes}
+        
+        # Group transactions by block hash
+        transactions_by_block = {}
+        for tx in transactions:
+            for block_hash in tx.block_hash:
+                if block_hash in block_hashes:
+                    if block_hash not in transactions_by_block:
+                        transactions_by_block[block_hash] = []
+                    transactions_by_block[block_hash].append(tx)
+        
+        # Get all transaction IDs
+        all_tx_ids = [tx.transaction_id for tx in transactions]
+        
+        # Get all outputs in one query
+        tx_outputs = await s.execute(
+            select(TransactionOutput)
+            .where(TransactionOutput.transaction_id.in_(all_tx_ids))
+        )
+        tx_outputs = tx_outputs.scalars().all()
+        
+        # Get all inputs in one query
+        tx_inputs = await s.execute(
+            select(TransactionInput)
+            .where(TransactionInput.transaction_id.in_(all_tx_ids))
+        )
+        tx_inputs = tx_inputs.scalars().all()
+        
+        # Group outputs and inputs by transaction ID
+        outputs_by_tx = {}
+        for output in tx_outputs:
+            if output.transaction_id not in outputs_by_tx:
+                outputs_by_tx[output.transaction_id] = []
+            outputs_by_tx[output.transaction_id].append(output)
+        
+        inputs_by_tx = {}
+        for input_tx in tx_inputs:
+            if input_tx.transaction_id not in inputs_by_tx:
+                inputs_by_tx[input_tx.transaction_id] = []
+            inputs_by_tx[input_tx.transaction_id].append(input_tx)
+        
+        # Build the final result
+        result = {}
+        for block_hash, block_transactions in transactions_by_block.items():
+            block_tx_list = []
+            for tx in block_transactions:
+                tx_data = {
+                    "verboseData": {
+                        "transactionId": tx.transaction_id,
+                        "hash": tx.hash,
+                        "mass": tx.mass,
+                        "blockHash": block_hash,
+                        "blockTime": tx.block_time,
+                        "isAccepted": tx.is_accepted,
+                        "acceptingBlockHash": tx.accepting_block_hash
+                    },
+                    "subnetworkId": tx.subnetwork_id,
+                    "transactionId": tx.transaction_id,
+                    "hash": tx.hash,
+                    "mass": tx.mass,
+                    "blockHash": block_hash,
+                    "blockTime": tx.block_time,
+                    "isAccepted": tx.is_accepted,
+                    "acceptingBlockHash": tx.accepting_block_hash,
+                    "outputs": [
+                        {
+                            "id": output.id,
+                            "transactionId": output.transaction_id,
+                            "index": output.index,
+                            "amount": output.amount,
+                            "scriptPublicKey": output.script_public_key,
+                            "scriptPublicKeyAddress": output.script_public_key_address,
+                            "scriptPublicKeyType": output.script_public_key_type,
+                            "acceptingBlockHash": output.accepting_block_hash
+                        }
+                        for output in outputs_by_tx.get(tx.transaction_id, [])
+                    ],
+                    "inputs": [
+                        {
+                            "id": input_tx.id,
+                            "transactionId": input_tx.transaction_id,
+                            "index": input_tx.index,
+                            "previousOutpointHash": input_tx.previous_outpoint_hash,
+                            "previousOutpointIndex": input_tx.previous_outpoint_index,
+                            "signatureScript": input_tx.signature_script,
+                            "sigOpCount": input_tx.sig_op_count
+                        }
+                        for input_tx in inputs_by_tx.get(tx.transaction_id, [])
+                    ]
+                }
+                block_tx_list.append(tx_data)
+            result[block_hash] = block_tx_list
+        
+        # Ensure all requested blocks have an entry (even if empty)
+        for block_hash in block_hashes:
+            if block_hash not in result:
+                result[block_hash] = []
+        
+        return result
