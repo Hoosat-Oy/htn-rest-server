@@ -21,7 +21,7 @@ class VerboseDataModel(BaseModel):
     difficulty: float = 0
     selectedParentHash: str = ""
     transactionIds: List[str] | None = []
-    blueScore: str = ""
+    blueScore: int = 0
     childrenHashes: List[str] | None = None
     mergeSetBluesHashes: List[str] = []
     mergeSetRedsHashes: List[str] = []
@@ -37,13 +37,13 @@ class BlockHeader(BaseModel):
     hashMerkleRoot: str = ""
     acceptedIdMerkleRoot: str = ""
     utxoCommitment: str = ""
-    timestamp: str = ""
+    timestamp: int = 0
     bits: int = 0
     nonce: str = ""
-    daaScore: str = ""
+    daaScore: int = 0
     blueWork: str = ""
     parents: List[ParentHashModel]
-    blueScore: str = ""
+    blueScore: int = 0
     pruningPoint: str = ""
 
 

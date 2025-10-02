@@ -18,10 +18,14 @@ class HtndClient(object):
     async def ping(self):
         try:
             info = await self.request("getInfoRequest")
-            self.server_version = info["getInfoResponse"]["serverVersion"]
-            self.is_utxo_indexed = info["getInfoResponse"]["isUtxoIndexed"]
-            self.is_synced = info["getInfoResponse"]["isSynced"]
-            self.p2p_id = info["getInfoResponse"]["p2pId"]
+            if not info or not info.get("getInfoResponse"):
+                return False
+            
+            response = info["getInfoResponse"]
+            self.server_version = response.get("serverVersion")
+            self.is_utxo_indexed = response.get("isUtxoIndexed")
+            self.is_synced = response.get("isSynced")
+            self.p2p_id = response.get("p2pId")
             return info
 
         except Exception as exc:
