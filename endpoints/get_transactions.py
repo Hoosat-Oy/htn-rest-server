@@ -39,9 +39,9 @@ class TxInput(BaseModel):
     index: int
     previous_outpoint_hash: str
     previous_outpoint_index: int
-    previous_outpoint_resolved: TxOutput | None
-    previous_outpoint_address: str | None
-    previous_outpoint_amount: int | None
+    previous_outpoint_resolved: TxOutput | None = None
+    previous_outpoint_address: str | None = None
+    previous_outpoint_amount: int | None = None
     signature_script: str
     sig_op_count: int
 
