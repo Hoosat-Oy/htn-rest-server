@@ -24,6 +24,7 @@ class HtndClient(object):
             return info
 
         except Exception as exc:
+            logging.error(f"Error in HtndClient.ping: {exc}")
             return False
 
     async def request(self, command, params=None, timeout=5):

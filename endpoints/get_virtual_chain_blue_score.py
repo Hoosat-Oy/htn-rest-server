@@ -1,5 +1,5 @@
 # encoding: utf-8
-from fastapi_utils.tasks import repeat_every
+import asyncio
 from pydantic import BaseModel
 
 from server import app, htnd_client
@@ -22,9 +22,13 @@ async def get_virtual_selected_parent_blue_score():
     return resp["getVirtualSelectedParentBlueScoreResponse"]
 
 
-@app.on_event("startup")
-@repeat_every(seconds=5)
 async def update_blue_score():
     global current_blue_score_data
-    resp = await htnd_client.request("getVirtualSelectedParentBlueScoreRequest")
-    current_blue_score_data["blue_score"] = int(resp["getVirtualSelectedParentBlueScoreResponse"]["blueScore"])
+    while True:
+        try:
+            resp = await htnd_client.request("getVirtualSelectedParentBlueScoreRequest")
+            current_blue_score_data["blue_score"] = int(resp["getVirtualSelectedParentBlueScoreResponse"]["blueScore"])
+        except Exception as e:
+            # Log error but continue the loop
+            pass
+        await asyncio.sleep(5)

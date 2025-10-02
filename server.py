@@ -1,12 +1,13 @@
 # encoding: utf-8
 import logging
 import os
+from contextlib import asynccontextmanager
 
 import fastapi.logger
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi_utils.tasks import repeat_every
+import asyncio
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -18,6 +19,20 @@ from htnd.HtndMultiClient import HtndMultiClient
 
 fastapi.logger.logger.setLevel(logging.WARNING)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    from main import startup
+    await startup()
+    asyncio.create_task(periodical_blockdag())
+    
+    # Start blue score update task
+    from endpoints.get_virtual_chain_blue_score import update_blue_score
+    asyncio.create_task(update_blue_score())
+    
+    yield
+    # Shutdown - cleanup if needed
+
 app = FastAPI(
     title="Hoosat REST-API server",
     description="This server is to communicate with Hoosat Network via REST-API",
@@ -27,7 +42,8 @@ app = FastAPI(
     },
     license_info={
         "name": "MIT LICENSE"
-    }
+    },
+    lifespan=lifespan
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
@@ -52,7 +68,7 @@ class PingResponse(BaseModel):
 
 
 class H11ErrorMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
+    async def dispatch(self, request: Request, call_next):
         try:
             return await call_next(request)
         except (LocalProtocolError, RemoteProtocolError) as exc:
@@ -84,6 +100,7 @@ async def ping_server():
             "is_synced": info["getInfoResponse"]["isSynced"]
         }
     except Exception as exc:
+        logging.error(f"Error in ping_server: {exc}")
         raise HTTPException(status_code=500, detail="htnd not connected.")
 
 
@@ -103,6 +120,7 @@ htnd_client = HtndMultiClient(htnd_hosts)
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
+    logging.error(f"Unhandled exception: {exc}", exc_info=True)
     await htnd_client.initialize_all()
     return JSONResponse(
         status_code=500,
@@ -112,7 +130,7 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
     )
 
 
-@app.on_event("startup")
-@repeat_every(seconds=60)
-async def periodical_blockdag():
-    await htnd_client.initialize_all()
+async def periodical_blockdag() -> None:
+    while True:
+        await htnd_client.initialize_all()
+        await asyncio.sleep(60)

@@ -36,7 +36,6 @@ if os.getenv('VSPC_REQUEST') == 'true':
     print(get_virtual_selected_parent_chain_from_block)
 
 
-@app.on_event("startup")
 async def startup():
     # create db if needed
     if IS_SQL_DB_CONFIGURED:
