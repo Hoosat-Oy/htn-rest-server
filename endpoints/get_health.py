@@ -45,11 +45,11 @@ async def health_state():
 
     for i, htnd_info in enumerate(htnd_client.htnds):
         htnds.append({
-            "isSynced": htnd_info.is_synced,
-            "isUtxoIndexed": htnd_info.is_utxo_indexed,
-            "p2pId": hashlib.sha256(htnd_info.p2p_id.encode()).hexdigest(),
+            "isSynced": htnd_info.is_synced if htnd_info.is_synced is not None else False,
+            "isUtxoIndexed": htnd_info.is_utxo_indexed if htnd_info.is_utxo_indexed is not None else False,
+            "p2pId": hashlib.sha256((htnd_info.p2p_id or "").encode()).hexdigest(),
             "htndHost": f"HTND_HOST_{i + 1}",
-            "serverVersion": htnd_info.server_version
+            "serverVersion": htnd_info.server_version or "unknown"
         })
 
     return {
