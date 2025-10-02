@@ -182,8 +182,9 @@ async def get_blocks_range(response: Response,
     """
     Get blocks within a blueScore range. Useful for indexing historical data.
     Returns blocks ordered by blueScore ascending.
-    Maximum 5000 blocks per request to prevent excessive load.
-    When includeTransactions=True, limit is automatically reduced to 100 for performance.
+    Maximum 5000 blocks per request without transactions.
+    Maximum 100 blocks per request WITH transactions to prevent API overload.
+    For faster lightweight queries with only coinbase payload, use /blocks-range-lightweight endpoint.
     """
     response.headers["X-Data-Source"] = "Database"
 
@@ -191,9 +192,20 @@ async def get_blocks_range(response: Response,
     if fromBlueScore > toBlueScore:
         raise HTTPException(status_code=400, detail="fromBlueScore must be <= toBlueScore")
 
-    if toBlueScore - fromBlueScore > 10000:
-        raise HTTPException(status_code=400,
-                            detail="Range too large. Maximum 10000 blueScore difference allowed")
+    # Strict limits when including transactions to prevent API overload
+    max_range = 100 if includeTransactions else 10000
+    max_limit = 100 if includeTransactions else 5000
+
+    if toBlueScore - fromBlueScore > max_range:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Range too large. Maximum {max_range} blueScore difference allowed" +
+                   (" with includeTransactions=true" if includeTransactions else "")
+        )
+
+    # Enforce limit based on includeTransactions
+    if limit > max_limit:
+        limit = max_limit
 
     blocks = await get_blocks_from_db_by_bluescore_range(fromBlueScore, toBlueScore, limit)
 
@@ -234,7 +246,8 @@ async def get_blocks_range(response: Response,
             "hash": block.hash,
             "difficulty": block.difficulty,
             "selectedParentHash": block.selected_parent_hash,
-            "transactionIds": [tx["verboseData"]["transactionId"] for tx in transactions_by_block.get(block.hash, [])] if includeTransactions else None,
+            "transactionIds": [tx["verboseData"]["transactionId"] for tx in
+                               transactions_by_block.get(block.hash, [])] if includeTransactions else None,
             "blueScore": block.blue_score,
             "childrenHashes": None,
             "mergeSetBluesHashes": block.merge_set_blues_hashes,
@@ -242,6 +255,80 @@ async def get_blocks_range(response: Response,
             "isChainBlock": None,
         }
     } for block in blocks]
+
+
+@app.get("/blocks-range-lightweight", response_model=List[dict], tags=["Hoosat blocks"])
+async def get_blocks_range_lightweight(response: Response,
+                                       fromBlueScore: int = Query(..., description="Starting blueScore (inclusive)"),
+                                       toBlueScore: int = Query(..., description="Ending blueScore (inclusive)"),
+                                       limit: int = Query(1000, le=5000, description="Max blocks to return")):
+    """
+    Lightweight version that returns only essential block data with coinbase payloads.
+    Much faster than full blocks-range with transactions.
+    Optimized for voting governance indexing - returns all coinbase transaction payloads.
+    Note: Blocks in DAG structure may contain multiple coinbase transactions.
+    """
+    response.headers["X-Data-Source"] = "Database"
+
+    # Validate range
+    if fromBlueScore > toBlueScore:
+        raise HTTPException(status_code=400, detail="fromBlueScore must be <= toBlueScore")
+
+    if toBlueScore - fromBlueScore > 10000:
+        raise HTTPException(status_code=400,
+                            detail="Range too large. Maximum 10000 blueScore difference allowed")
+
+    blocks = await get_blocks_from_db_by_bluescore_range(fromBlueScore, toBlueScore, limit)
+
+    # Set cache headers
+    if toBlueScore > current_blue_score_data["blue_score"] - 20:
+        response.headers["Cache-Control"] = "no-store"
+    elif toBlueScore > current_blue_score_data["blue_score"] - 100:
+        response.headers["Cache-Control"] = "public, max-age=10"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=600"
+
+    # Get only coinbase payloads for all blocks in one query
+    block_hashes = [block.hash for block in blocks]
+    coinbase_payloads = await get_coinbase_payloads_batch(block_hashes)
+
+    return [{
+        "blockHash": block.hash,
+        "blueScore": block.blue_score,
+        "timestamp": round(block.timestamp.timestamp() * 1000),
+        "difficulty": block.difficulty,
+        "coinbasePayloads": coinbase_payloads.get(block.hash, [])  # Массив вместо одного значения
+    } for block in blocks]
+
+
+async def get_coinbase_payloads_batch(block_hashes):
+    """
+    Get all coinbase transaction payloads for multiple blocks.
+    Returns list of payloads per block to handle DAG structure where
+    multiple blocks can have the same blueScore.
+    Much faster than loading full transaction data.
+    """
+    if not block_hashes:
+        return {}
+
+    async with async_session() as s:
+        # Get only coinbase transactions (subnetwork_id = '0100000000000000000000000000000000000000')
+        transactions = await s.execute(
+            select(Transaction.block_hash, Transaction.payload)
+            .where(Transaction.block_hash.overlap(block_hashes))
+            .where(Transaction.subnetwork_id == '0100000000000000000000000000000000000000')
+        )
+
+        result = {}
+        for tx in transactions:
+            # Each block can be in multiple block_hash entries (DAG structure)
+            for block_hash in tx.block_hash:
+                if block_hash in block_hashes:
+                    if block_hash not in result:
+                        result[block_hash] = []
+                    result[block_hash].append(tx.payload)  # Добавляем все payloads
+
+        return result
 
 
 async def get_blocks_from_db_by_bluescore(blue_score):
