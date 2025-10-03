@@ -259,14 +259,14 @@ async def get_blocks_range(response: Response,
 
 @app.get("/blocks-range-lightweight", response_model=List[dict], tags=["Hoosat blocks"])
 async def get_blocks_range_lightweight(response: Response,
-                                       fromBlueScore: int = Query(..., description="Starting blueScore (inclusive)"),
-                                       toBlueScore: int = Query(..., description="Ending blueScore (inclusive)"),
-                                       limit: int = Query(1000, le=5000, description="Max blocks to return")):
+                                       fromBlueScore: int = Query(...),
+                                       toBlueScore: int = Query(...),
+                                       limit: int = Query(1000, le=5000)):
     """
-    Lightweight version that returns only essential block data with coinbase payloads.
-    Much faster than full blocks-range with transactions.
-    Optimized for voting governance indexing - returns all coinbase transaction payloads.
-    Note: Blocks in DAG structure may contain multiple coinbase transactions.
+    Lightweight endpoint returning blocks with ALL transaction payloads (not just coinbase).
+    In HTN, any user can include payload in their transaction for voting (KIP-14).
+    Much faster than full blocks-range with complete transaction data.
+    Returns transaction IDs with payloads to track voting participants.
     """
     response.headers["X-Data-Source"] = "Database"
 
@@ -288,44 +288,47 @@ async def get_blocks_range_lightweight(response: Response,
     else:
         response.headers["Cache-Control"] = "public, max-age=600"
 
-    # Get only coinbase payloads for all blocks in one query
     block_hashes = [block.hash for block in blocks]
-    coinbase_payloads = await get_coinbase_payloads_batch(block_hashes)
+    all_payloads = await get_all_payloads_batch(block_hashes)
 
     return [{
         "blockHash": block.hash,
         "blueScore": block.blue_score,
         "timestamp": round(block.timestamp.timestamp() * 1000),
         "difficulty": block.difficulty,
-        "coinbasePayloads": coinbase_payloads.get(block.hash, [])  # Массив вместо одного значения
+        "payloads": all_payloads.get(block.hash, [])
     } for block in blocks]
 
 
-async def get_coinbase_payloads_batch(block_hashes):
+async def get_all_payloads_batch(block_hashes):
     """
-    Get coinbase transaction payloads for multiple blocks.
-    Coinbase transactions have subnetwork_id = '0100000000000000000000000000000000000000'
+    Get ALL transaction payloads for multiple blocks (not just coinbase).
+    In HTN/Kaspa, any transaction can include payload for voting (KIP-14).
+    Returns transaction ID with payload to track who voted.
     """
     if not block_hashes:
         return {}
 
     async with async_session() as s:
-        # Get coinbase transactions (subnetwork_id for coinbase)
+        # Get ALL transactions with payload (remove subnetwork_id filter)
         transactions = await s.execute(
-            select(Transaction.block_hash, Transaction.payload)
+            select(Transaction.block_hash, Transaction.transaction_id, Transaction.payload)
             .where(Transaction.block_hash.overlap(block_hashes))
-            .where(Transaction.subnetwork_id == '0100000000000000000000000000000000000000')
             .where(Transaction.payload.isnot(None))
             .where(Transaction.payload != '')
         )
 
         result = {}
         for tx in transactions:
+            # Each block can be in multiple block_hash entries (DAG structure)
             for block_hash in tx.block_hash:
                 if block_hash in block_hashes:
                     if block_hash not in result:
                         result[block_hash] = []
-                    result[block_hash].append(tx.payload)
+                    result[block_hash].append({
+                        'txId': tx.transaction_id,
+                        'payload': tx.payload
+                    })
 
         return result
 
