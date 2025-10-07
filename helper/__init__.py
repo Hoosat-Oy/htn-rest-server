@@ -24,22 +24,39 @@ async def get_htn_price():
 
 @cached(ttl=300)
 async def get_htn_market_data():
+    endpoint = "nonkyc"
     global FLOOD_DETECTED
     global CACHE
     if not FLOOD_DETECTED or time.time() - FLOOD_DETECTED > 300:
-        _logger.debug("Querying CoinGecko now.")
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://api.coingecko.com/api/v3/coins/hoosat-network", timeout=10) as resp:
-                if resp.status == 200:
-                    FLOOD_DETECTED = False
-                    CACHE = (await resp.json())["market_data"]
-                    return CACHE
-                elif resp.status == 429:
-                    FLOOD_DETECTED = time.time()
-                    if CACHE:
-                        _logger.warning('Using cached value. 429 detected.')
-                    _logger.warning("Rate limit exceeded.")
-                else:
-                    _logger.error(f"Did not retrieve the market data. Status code {resp.status}")
+        if endpoint == "coingecko":
+            _logger.debug("Querying CoinGecko now.")
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://api.coingecko.com/api/v3/coins/hoosat-network", timeout=10) as resp:
+                    if resp.status == 200:
+                        FLOOD_DETECTED = False
+                        CACHE = (await resp.json())["market_data"]
+                        return CACHE
+                    elif resp.status == 429:
+                        FLOOD_DETECTED = time.time()
+                        if CACHE:
+                            _logger.warning('Using cached value. 429 detected.')
+                        _logger.warning("Rate limit exceeded.")
+                    else:
+                        _logger.error(f"Did not retrieve the market data. Status code {resp.status}")
+        elif endpoint == "nonkyc":
+            _logger.debug("Querying NonKYC now.")
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://api.nonkyc.io/api/v2/ticker/HTN%2FUSDT", timeout=10) as resp:
+                    if resp.status == 200:
+                        FLOOD_DETECTED = False
+                        CACHE = (await resp.json())['last_price']
+                        return CACHE
+                    elif resp.status == 429:
+                        FLOOD_DETECTED = time.time()
+                        if CACHE:
+                            _logger.warning('Using cached value. 429 detected.')
+                        _logger.warning("Rate limit exceeded.")
+                    else:
+                        _logger.error(f"Did not retrieve the market data. Status code {resp.status}")
 
     return CACHE
