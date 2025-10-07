@@ -51,7 +51,7 @@ async def get_htn_market_data():
                         FLOOD_DETECTED = False
                         data = (await resp.json())
                         _logger.info(data)
-                        CACHE = {'usd': float(data['last_price'])}
+                        CACHE = { 'current_price': {'usd': float(data['last_price'])} }
                         return CACHE
                     elif resp.status == 429:
                         FLOOD_DETECTED = time.time()
