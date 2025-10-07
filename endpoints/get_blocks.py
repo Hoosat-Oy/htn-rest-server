@@ -182,8 +182,9 @@ async def get_blocks_range(response: Response,
     """
     Get blocks within a blueScore range. Useful for indexing historical data.
     Returns blocks ordered by blueScore ascending.
-    Maximum 5000 blocks per request to prevent excessive load.
-    When includeTransactions=True, limit is automatically reduced to 100 for performance.
+    Maximum 5000 blocks per request without transactions.
+    Maximum 100 blocks per request WITH transactions to prevent API overload.
+    For faster lightweight queries with only coinbase payload, use /blocks-range-lightweight endpoint.
     """
     response.headers["X-Data-Source"] = "Database"
 
@@ -191,9 +192,20 @@ async def get_blocks_range(response: Response,
     if fromBlueScore > toBlueScore:
         raise HTTPException(status_code=400, detail="fromBlueScore must be <= toBlueScore")
 
-    if toBlueScore - fromBlueScore > 10000:
-        raise HTTPException(status_code=400,
-                            detail="Range too large. Maximum 10000 blueScore difference allowed")
+    # Strict limits when including transactions to prevent API overload
+    max_range = 100 if includeTransactions else 10000
+    max_limit = 100 if includeTransactions else 5000
+
+    if toBlueScore - fromBlueScore > max_range:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Range too large. Maximum {max_range} blueScore difference allowed" +
+                   (" with includeTransactions=true" if includeTransactions else "")
+        )
+
+    # Enforce limit based on includeTransactions
+    if limit > max_limit:
+        limit = max_limit
 
     blocks = await get_blocks_from_db_by_bluescore_range(fromBlueScore, toBlueScore, limit)
 
@@ -234,7 +246,8 @@ async def get_blocks_range(response: Response,
             "hash": block.hash,
             "difficulty": block.difficulty,
             "selectedParentHash": block.selected_parent_hash,
-            "transactionIds": [tx["verboseData"]["transactionId"] for tx in transactions_by_block.get(block.hash, [])] if includeTransactions else None,
+            "transactionIds": [tx["verboseData"]["transactionId"] for tx in
+                               transactions_by_block.get(block.hash, [])] if includeTransactions else None,
             "blueScore": block.blue_score,
             "childrenHashes": None,
             "mergeSetBluesHashes": block.merge_set_blues_hashes,
@@ -242,6 +255,82 @@ async def get_blocks_range(response: Response,
             "isChainBlock": None,
         }
     } for block in blocks]
+
+
+@app.get("/blocks-range-lightweight", response_model=List[dict], tags=["Hoosat blocks"])
+async def get_blocks_range_lightweight(response: Response,
+                                       fromBlueScore: int = Query(...),
+                                       toBlueScore: int = Query(...),
+                                       limit: int = Query(1000, le=5000)):
+    """
+    Lightweight endpoint returning blocks with ALL transaction payloads (not just coinbase).
+    In HTN, any user can include payload in their transaction for voting (KIP-14).
+    Much faster than full blocks-range with complete transaction data.
+    Returns transaction IDs with payloads to track voting participants.
+    """
+    response.headers["X-Data-Source"] = "Database"
+
+    # Validate range
+    if fromBlueScore > toBlueScore:
+        raise HTTPException(status_code=400, detail="fromBlueScore must be <= toBlueScore")
+
+    if toBlueScore - fromBlueScore > 10000:
+        raise HTTPException(status_code=400,
+                            detail="Range too large. Maximum 10000 blueScore difference allowed")
+
+    blocks = await get_blocks_from_db_by_bluescore_range(fromBlueScore, toBlueScore, limit)
+
+    # Set cache headers
+    if toBlueScore > current_blue_score_data["blue_score"] - 20:
+        response.headers["Cache-Control"] = "no-store"
+    elif toBlueScore > current_blue_score_data["blue_score"] - 100:
+        response.headers["Cache-Control"] = "public, max-age=10"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=600"
+
+    block_hashes = [block.hash for block in blocks]
+    all_payloads = await get_all_payloads_batch(block_hashes)
+
+    return [{
+        "blockHash": block.hash,
+        "blueScore": block.blue_score,
+        "timestamp": round(block.timestamp.timestamp() * 1000),
+        "difficulty": block.difficulty,
+        "payloads": all_payloads.get(block.hash, [])
+    } for block in blocks]
+
+
+async def get_all_payloads_batch(block_hashes):
+    """
+    Get ALL transaction payloads for multiple blocks (not just coinbase).
+    In HTN/Kaspa, any transaction can include payload for voting (KIP-14).
+    Returns transaction ID with payload to track who voted.
+    """
+    if not block_hashes:
+        return {}
+
+    async with async_session() as s:
+        # Get ALL transactions with payload (remove subnetwork_id filter)
+        transactions = await s.execute(
+            select(Transaction.block_hash, Transaction.transaction_id, Transaction.payload)
+            .where(Transaction.block_hash.overlap(block_hashes))
+            .where(Transaction.payload.isnot(None))
+            .where(Transaction.payload != '')
+        )
+
+        result = {}
+        for tx in transactions:
+            # Each block can be in multiple block_hash entries (DAG structure)
+            for block_hash in tx.block_hash:
+                if block_hash in block_hashes:
+                    if block_hash not in result:
+                        result[block_hash] = []
+                    result[block_hash].append({
+                        'txId': tx.transaction_id,
+                        'payload': tx.payload
+                    })
+
+        return result
 
 
 async def get_blocks_from_db_by_bluescore(blue_score):
