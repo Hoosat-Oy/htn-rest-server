@@ -49,7 +49,9 @@ async def get_htn_market_data():
                 async with session.get("https://api.nonkyc.io/api/v2/ticker/HTN%2FUSDT", timeout=10) as resp:
                     if resp.status == 200:
                         FLOOD_DETECTED = False
-                        CACHE['usd'] = (await resp.json())['last_price']
+                        data = (await resp.json())
+                        _logger.info(data)
+                        CACHE = {'usd': data['last_price']}
                         return CACHE
                     elif resp.status == 429:
                         FLOOD_DETECTED = time.time()
