@@ -27,22 +27,6 @@ async def get_htn_market_data():
     global FLOOD_DETECTED
     global CACHE
     if not FLOOD_DETECTED or time.time() - FLOOD_DETECTED > 300:
-        # Try coingecko first
-        _logger.debug("Querying CoinGecko now.")
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://api.coingecko.com/api/v3/coins/hoosat-network", timeout=10) as resp:
-                if resp.status == 200:
-                    FLOOD_DETECTED = False
-                    CACHE = (await resp.json())["market_data"]
-                    return CACHE
-                elif resp.status == 429:
-                    FLOOD_DETECTED = time.time()
-                    if CACHE:
-                        _logger.warning('Using cached value. 429 detected.')
-                    _logger.warning("Rate limit exceeded.")
-                else:
-                    _logger.error(f"CoinGecko failed with status code {resp.status}")
-        
         # Try coinpaprika as fallback
         _logger.debug("Querying CoinPaprika now.")
         async with aiohttp.ClientSession() as session:
@@ -81,6 +65,22 @@ async def get_htn_market_data():
                     _logger.warning("Rate limit exceeded.")
                 else:
                     _logger.error(f"CoinPaprika failed with status code {resp.status}")
+        
+        # Try coingecko first
+        _logger.debug("Querying CoinGecko now.")
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://api.coingecko.com/api/v3/coins/hoosat-network", timeout=10) as resp:
+                if resp.status == 200:
+                    FLOOD_DETECTED = False
+                    CACHE = (await resp.json())["market_data"]
+                    return CACHE
+                elif resp.status == 429:
+                    FLOOD_DETECTED = time.time()
+                    if CACHE:
+                        _logger.warning('Using cached value. 429 detected.')
+                    _logger.warning("Rate limit exceeded.")
+                else:
+                    _logger.error(f"CoinGecko failed with status code {resp.status}")
         
         # Try nonkyc as final fallback
         _logger.debug("Querying NonKYC now.")
