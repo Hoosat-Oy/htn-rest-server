@@ -12,6 +12,7 @@ from server import app, htnd_client
 
 MAXHASH_CACHE = (0, 0)
 
+BPS = 5
 
 class BlockHeader(BaseModel):
     hash: str = "e6641454e16cff4f232b899564eeaa6e480b66069d87bee6a2b2476e63fcd887"
@@ -37,7 +38,7 @@ async def get_hashrate(stringOnly: bool = False):
     """
 
     resp = await htnd_client.request("getBlockDagInfoRequest")
-    hashrate = resp["getBlockDagInfoResponse"]["difficulty"] * 2
+    hashrate = resp["getBlockDagInfoResponse"]["difficulty"] * 2 * BPS
     hashrate_in_th = hashrate / 1_000_000_000_000
 
     if not stringOnly:
